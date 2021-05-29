@@ -34,7 +34,7 @@ chrome.commands.onCommand.addListener(function (command) {
 					// window.open('https://www.google.com/search?ie=utf-8&q=' + query);
 				}
 			}
-			if (tab.url.search("google.com.hk/search") != -1) {
+			if (tab.url.search("google.com") != -1) {
 				query = urlObj['q'];
 				if (query) {
 					chrome.tabs.update({ url: 'https://www.baidu.com/s?ie=utf-8&wd=' + query });

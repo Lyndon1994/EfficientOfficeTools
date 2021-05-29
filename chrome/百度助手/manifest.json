@@ -1,9 +1,12 @@
 {
    "background": {
       "persistent": false,
-      "scripts": [ "baidu.js" ]
+      "scripts": [
+         "baidu.js"
+      ]
    },
-   "description": "快捷键切换百度搜索和Google搜索；在右键菜单添加百度文字搜索功能。与全家桶式右键扩展不一样的是，本扩展专注百度搜索，因此扩展右键顶级菜单就是搜索按钮，更适合高频率使用百度的用户。",
+   "description": "快捷键切换百度搜索和Google搜索；在右键菜单添加百度文字搜索功能。",
+   "homepage_url": "https://www.baidu.com",
    "icons": {
       "128": "images/icon128.png",
       "16": "images/icon16.png",
@@ -12,17 +15,20 @@
    },
    "manifest_version": 2,
    "name": "百度助手",
-   "permissions": [ "contextMenus", "tabs", "https://www.baidu.com/" ],
+   "permissions": [
+      "contextMenus",
+      "activeTab"
+   ],
    "short_name": "百度助手",
    "update_url": "https://clients2.google.com/service/update2/crx",
-   "version": "1.1.0",
+   "version": "1.0.0",
    "commands": {
       "toggle-search": {
-        "suggested_key": {
-          "default": "Alt+S",
-          "mac": "MacCtrl+S"
-        },
-        "description": "Toggle Search in Baidu and Google"
+         "suggested_key": {
+            "default": "Alt+S",
+            "mac": "MacCtrl+S"
+         },
+         "description": "Toggle Search in Baidu and Google"
       }
-    }
+   }
 }

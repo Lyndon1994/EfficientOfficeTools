@@ -1,0 +1,46 @@
+{
+	"background": {
+		"scripts": [
+			"js/background.js"
+		]
+	},
+	"description": "快速切换自定义搜索引擎；在右键菜单添加自定义搜索引擎。",
+	"homepage_url": "https://www.baidu.com",
+	"icons": {
+		"16": "assets/logo.png",
+		"32": "assets/logo.png",
+		"48": "assets/logo.png",
+		"128": "assets/logo.png"
+	},
+	"content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+	"manifest_version": 2,
+	"name": "搜索助手",
+	"permissions": [
+		"contextMenus",
+		"activeTab",
+		"storage"
+	],
+	"short_name": "搜索助手",
+	"update_url": "https://clients2.google.com/service/update2/crx",
+	"version": "1.0.0",
+	"commands": {
+		"toggle-search": {
+			"suggested_key": {
+				"default": "Alt+S",
+				"mac": "MacCtrl+S"
+			},
+			"description": "Toggle Search Engine"
+		}
+	},
+	"browser_action": {
+		"default_icon": "assets/logo.png",
+		"default_title": "搜索助手",
+		"default_popup": "popup.html"
+	},
+	"options_ui": {
+		"page": "options.html"
+	},
+	"web_accessible_resources": [
+		"fonts/*"
+	]
+}
