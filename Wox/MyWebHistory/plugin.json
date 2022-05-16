@@ -1,0 +1,12 @@
+{
+    "ID":"S1QNXEUNGFSL4M400B1LPNZBTJ7GGUZO",
+    "ActionKeyword":"*",
+    "Name":"Search Browser History",
+    "Description":"Search browser history support edge and chrome",
+    "Author":"Lyndon",
+    "Version":"1.0",
+    "Language":"python",
+    "Website":"https://github.com/Lyndon1994/EfficientOfficeTools",
+    "IcoPath":"Images\\web_search.png",
+    "ExecuteFileName":"main.py"
+}
