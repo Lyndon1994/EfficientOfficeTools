@@ -4,7 +4,7 @@
     "Name":"Web Search",
     "Description":"Allows web searches without needing to type an action keyword",
     "Author":"Lyndon",
-    "Version":"1.0",
+    "Version":"1.0.0",
     "Language":"python",
     "Website":"https://github.com/Lyndon1994/EfficientOfficeTools",
     "IcoPath":"Images\\web_search.png",
