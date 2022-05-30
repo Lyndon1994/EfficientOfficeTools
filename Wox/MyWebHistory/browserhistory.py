@@ -2,18 +2,18 @@ import csv
 import os
 import sqlite3
 import sys
-from datetime import datetime
 from shutil import copyfile
 import logging
+import time
 
 # platform_table maps the name of user's OS to a platform code
 platform_table = {
-        'linux': 0,
-        'linux2': 0,
-        'darwin': 1,
-        'cygwin': 2,
-        'win32': 2,
-        }
+    'linux': 0,
+    'linux2': 0,
+    'darwin': 1,
+    'cygwin': 2,
+    'win32': 2,
+}
 
 # it supports Linux, MacOS, and Windows platforms.
 try:
@@ -55,9 +55,12 @@ def get_database_paths() -> dict:
         cwd_path = os.getcwd()
         cwd_path_list = cwd_path.split('/')
         # it creates string paths to broswer databases
-        abs_safari_path = os.path.join('/', cwd_path_list[1], cwd_path_list[2], 'Library', 'Safari', 'History.db')
-        abs_chrome_path = os.path.join('/', cwd_path_list[1], cwd_path_list[2], 'Library', 'Application Support', 'Google/Chrome/Default', 'History')
-        abs_firefox_path = os.path.join('/', cwd_path_list[1], cwd_path_list[2], 'Library', 'Application Support', 'Firefox/Profiles')
+        abs_safari_path = os.path.join(
+            '/', cwd_path_list[1], cwd_path_list[2], 'Library', 'Safari', 'History.db')
+        abs_chrome_path = os.path.join(
+            '/', cwd_path_list[1], cwd_path_list[2], 'Library', 'Application Support', 'Google/Chrome/Default', 'History')
+        abs_firefox_path = os.path.join(
+            '/', cwd_path_list[1], cwd_path_list[2], 'Library', 'Application Support', 'Firefox/Profiles')
         # check whether the databases exist
         if os.path.exists(abs_safari_path):
             browser_path_dict['safari'] = abs_safari_path
@@ -68,16 +71,20 @@ def get_database_paths() -> dict:
             # it looks for a directory that ends '.default'
             for f in firefox_dir_list:
                 if f.find('.default') > 0:
-                    abs_firefox_path = os.path.join(abs_firefox_path, f, 'places.sqlite')
+                    abs_firefox_path = os.path.join(
+                        abs_firefox_path, f, 'places.sqlite')
             # check whether the firefox database exists
             if os.path.exists(abs_firefox_path):
                 browser_path_dict['firefox'] = abs_firefox_path
     # if it is a windows
     if platform_code == 2:
         homepath = os.path.expanduser("~")
-        abs_chrome_path = os.path.join(homepath, 'AppData', 'Local', 'Google', 'Chrome', 'User Data', 'Default', 'History')
-        abs_edge_path = os.path.join(homepath, 'AppData', 'Local', 'Microsoft', 'Edge', 'User Data', 'Default', 'History')
-        abs_firefox_path = os.path.join(homepath, 'AppData', 'Roaming', 'Mozilla', 'Firefox', 'Profiles')
+        abs_chrome_path = os.path.join(
+            homepath, 'AppData', 'Local', 'Google', 'Chrome', 'User Data', 'Default', 'History')
+        abs_edge_path = os.path.join(
+            homepath, 'AppData', 'Local', 'Microsoft', 'Edge', 'User Data', 'Default', 'History')
+        abs_firefox_path = os.path.join(
+            homepath, 'AppData', 'Roaming', 'Mozilla', 'Firefox', 'Profiles')
         # it creates string paths to broswer databases
         if os.path.exists(abs_chrome_path):
             browser_path_dict['chrome'] = abs_chrome_path
@@ -87,7 +94,8 @@ def get_database_paths() -> dict:
             firefox_dir_list = os.listdir(abs_firefox_path)
             for f in firefox_dir_list:
                 if f.find('.default') > 0:
-                    abs_firefox_path = os.path.join(abs_firefox_path, f, 'places.sqlite')
+                    abs_firefox_path = os.path.join(
+                        abs_firefox_path, f, 'places.sqlite')
             if os.path.exists(abs_firefox_path):
                 browser_path_dict['firefox'] = abs_firefox_path
     # if it is a linux and it has only a firefox
@@ -95,14 +103,16 @@ def get_database_paths() -> dict:
         cwd_path = os.getcwd()
         cwd_path_list = cwd_path.split('/')
         # it creates string paths to broswer databases
-        abs_firefox_path = os.path.join('/', cwd_path_list[1], cwd_path_list[2], '.mozilla', 'firefox')
+        abs_firefox_path = os.path.join(
+            '/', cwd_path_list[1], cwd_path_list[2], '.mozilla', 'firefox')
         # check whether the path exists
         if os.path.exists(abs_firefox_path):
             firefox_dir_list = os.listdir(abs_firefox_path)
             # it looks for a directory that ends '.default'
             for f in firefox_dir_list:
                 if f.find('.default') > 0:
-                    abs_firefox_path = os.path.join(abs_firefox_path, f, 'places.sqlite')
+                    abs_firefox_path = os.path.join(
+                        abs_firefox_path, f, 'places.sqlite')
             # check whether the firefox database exists
             if os.path.exists(abs_firefox_path):
                 browser_path_dict['firefox'] = abs_firefox_path
@@ -110,7 +120,7 @@ def get_database_paths() -> dict:
     return browser_path_dict
 
 
-def get_browserhistory(keyword = "", browsers=[]) -> dict:
+def get_browserhistory(keyword="", browsers=[]) -> dict:
     """Get the user's browsers history by using sqlite3 module to connect to the dabases.
        It returns a dictionary: its key is a name of browser in str and its value is a list of
        tuples, each tuple contains four elements, including url, title, and visited_time. 
@@ -134,21 +144,27 @@ def get_browserhistory(keyword = "", browsers=[]) -> dict:
         if browsers and browser not in browsers:
             continue
         try:
-            copyfile(path, path+'.bak')
+            # 必须读取bak文件，减少copy的次数
+            if not os.path.exists(path+'.bak') or time.time() % 10 == 0:
+                copyfile(path, path+'.bak')
             path = path+'.bak'
-        
+
             conn = sqlite3.connect(path)
             cursor = conn.cursor()
             # cursor.execute('pragma encoding=utf8')
             _SQL = ''
             # SQL command for browsers' database table
-            where = 'where 1=1' if not keyword else f"where url like '%{keyword}%' or title like '%{keyword}%'"
+            keywords = keyword.split()
+            wheres = []
+            for k in keywords:
+                wheres.append(f"(url like '%{k}%' or title like '%{k}%')")
+            where = 'where 1=1' if not keyword else "where " + ' and '.join(wheres)
             if browser == 'chrome':
                 _SQL = f"""SELECT url, title, datetime((last_visit_time/1000000)-11644473600, 'unixepoch', 'localtime') 
-                                    AS last_visit_time FROM urls {where} ORDER BY last_visit_time DESC limit 10"""
+                                    AS last_visit_time FROM urls {where} ORDER BY last_visit_time DESC limit 100"""
             elif browser == 'edge':
                 _SQL = f"""SELECT url, title, datetime((last_visit_time/1000000)-11644473600, 'unixepoch', 'localtime') 
-                                    AS last_visit_time FROM urls {where} ORDER BY last_visit_time DESC limit 10"""
+                                    AS last_visit_time FROM urls {where} ORDER BY last_visit_time DESC limit 100"""
             elif browser == 'firefox':
                 _SQL = """SELECT url, title, datetime((visit_date/1000000), 'unixepoch', 'localtime') AS visit_date 
                                     FROM moz_places INNER JOIN moz_historyvisits on moz_historyvisits.place_id = moz_places.id ORDER BY visit_date DESC"""
@@ -164,7 +180,8 @@ def get_browserhistory(keyword = "", browsers=[]) -> dict:
                 query_result = cursor.fetchall()
             except sqlite3.OperationalError:
                 logging.error('* Notification * ')
-                logging.error('Please Completely Close ' + browser.upper() + ' Window')
+                logging.error('Please Completely Close ' +
+                              browser.upper() + ' Window')
             except Exception as err:
                 logging.error(err)
             # close cursor and connector
@@ -173,7 +190,8 @@ def get_browserhistory(keyword = "", browsers=[]) -> dict:
             # put the query result based on the name of browsers.
             browserhistory[browser] = query_result
         except sqlite3.OperationalError:
-            logging.error('* ' + browser.upper() + ' Database Permission Denied.')
+            logging.error('* ' + browser.upper() +
+                          ' Database Permission Denied.')
         except Exception as err:
             logging.error(err)
 
@@ -188,6 +206,6 @@ def write_browserhistory_csv() -> None:
     for browser, history in browserhistory.items():
         with open(browser + '_history.csv', mode='w', encoding='utf-8', newline='') as csvfile:
             csv_writer = csv.writer(csvfile, delimiter=',',
-                            quoting=csv.QUOTE_ALL)
+                                    quoting=csv.QUOTE_ALL)
             for data in history:
                 csv_writer.writerow(data)
