@@ -11,7 +11,7 @@ chrome.contextMenus.onClicked.addListener(function (info, tab) {
     window.open(info.menuItemId.replace('%s', encodeURIComponent(info.selectionText)));
 });
 
-chrome.runtime.onInstalled.addListener(function () {
+function addContextMenus() {
     chrome.contextMenus.removeAll();
     let defaultConfig = { 'engines': '[{\"name\":\"百度\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"1\",\"inShortcuts\":true,\"inRight\":true},{\"name\":\"Google\",\"url\":\"https://www.google.com.hk/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":false,\"inShortcuts\":true}]' }; // 默认配置
     chrome.storage.sync.get(defaultConfig, function (items) {
@@ -26,7 +26,10 @@ chrome.runtime.onInstalled.addListener(function () {
             }
         });
     });
-});
+}
+
+chrome.runtime.onStartup.addListener(addContextMenus);
+chrome.runtime.onInstalled.addListener(addContextMenus);
 
 // 监听来自content-script的消息
 chrome.runtime.onMessage.addListener(function(engines, sender, sendResponse)

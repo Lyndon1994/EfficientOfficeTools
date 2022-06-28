@@ -26,6 +26,13 @@ npm run build:crx
 - 打开开发者模式，选择`加载已解压的扩展程序`
 - 导入项目中的`dist`文件夹即可到目标页查看插件状态
 
+### 发布
+```
+# 打包zip:
+npm run build:zip
+# 访问上传： https://chrome.google.com/webstore/devconsole/ea79ae7b-aa25-4185-92f4-8418c3113612/fjjkihnjlinkjpfeooipegebcakeocef/edit/package
+```
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 

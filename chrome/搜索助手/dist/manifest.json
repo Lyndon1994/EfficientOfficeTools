@@ -5,7 +5,7 @@
 		]
 	},
 	"description": "快速切换自定义搜索引擎；在右键菜单添加自定义搜索引擎。",
-	"homepage_url": "https://www.baidu.com",
+	"homepage_url": "https://github.com/Lyndon1994/EfficientOfficeTools",
 	"icons": {
 		"16": "assets/logo.png",
 		"32": "assets/logo.png",
@@ -22,7 +22,7 @@
 	],
 	"short_name": "搜索助手",
 	"update_url": "https://clients2.google.com/service/update2/crx",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"commands": {
 		"toggle-search": {
 			"suggested_key": {
@@ -30,6 +30,12 @@
 				"mac": "MacCtrl+S"
 			},
 			"description": "Toggle Search Engine"
+		},
+		"_execute_action": {
+			"suggested_key": {
+				"default": "Shift+Alt+S",
+				"mac": "Command+MacCtrl+S"
+			}
 		}
 	},
 	"browser_action": {

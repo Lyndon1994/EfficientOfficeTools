@@ -1,14 +1,25 @@
 <template>
-<el-form>
-    <el-row v-for="item in engines" :key="item.id">
-        <el-col :span="24">
-            <el-button type="text" @click="search(item)" :style="randomRgb()">{{item.name}}</el-button>
-        </el-col>
-    </el-row>
-</el-form>
+    <!-- // @submit.prevent.native="searchFirst"  -->
+    <el-form ref="form" label-width="10px" size="mini" style="width: 300px; height: 70px;">
+        <el-row>
+            <el-input ref="queryInput" style="width: 300px" placeholder="Search ..." @focus="$event.target.select()"
+                v-model="query">
+                <i slot="suffix" class="el-input__icon el-icon-search"></i>
+            </el-input>
+        </el-row>
+        <el-row>
+            <el-tag v-for="(item, index) in engines" :key="item.id" :type="index == selectId ? 'success' : 'info'"
+                :hit="index == selectId" :color="index == selectId ? '':'Transparent'" @click="search(item)">
+                <img v-if="item.icon" style="width: 30px; height: 30px;" :src="item.icon" />
+                <span v-if="!item.icon">{{ item.name }}</span>
+            </el-tag>
+            <i class="el-icon-setting" @click="setting()" style="cursor: pointer; position: absolute; top: 15px; right: 1px; opacity: 0.2;"></i>
+        </el-row>
+    </el-form>
 </template>
 
 <script>
+/* eslint-disable */
 export default {
     name: "App",
 
@@ -17,18 +28,13 @@ export default {
     data() {
         return {
             engines: [],
+            query: "",
+            selectId: 0,
+            tabIndex: -1,
         };
     },
 
     methods: {
-        randomRgb() {
-            let R = Math.floor(Math.random() * 255);
-            let G = Math.floor(Math.random() * 255);
-            let B = Math.floor(Math.random() * 255);
-            return {
-                color: 'rgb(' + R + ',' + G + ',' + B + ')'
-            };
-        },
         init() {
             let defaultConfig = {
                 'engines': '[{\"name\":\"百度\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"1\",\"inShortcuts\":true,\"inRight\":true},{\"name\":\"Google\",\"url\":\"https://www.google.com.hk/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":false,\"inShortcuts\":true}]'
@@ -44,31 +50,77 @@ export default {
                 });
                 console.log(that.engines);
             });
-        },
-        search(item) {
+
             chrome.tabs.getSelected(null, function (tab) {
                 let urlObj = parseUrl(tab.url);
-                let query = urlObj['wd'] || urlObj['word'] || urlObj['w'] || urlObj['q'] || urlObj['query'];
-                if (query) {
-                    chrome.tabs.update({
-                        url: item.url.replace('%s', query)
-                    });
-                    window.close();
-                } else {
-                    window.open(item.url.replace('%s', ''));
-                    window.close();
-                }
+                that.query = urlObj['wd'] || urlObj['word'] || urlObj['w'] || urlObj['q'] || urlObj['query'] || "";
+                that.query = decodeURI(that.query);
+                that.tabIndex = tab.index;
             });
+            // 聚焦搜索框
+            this.$nextTick(() => {
+                this.$refs['queryInput'].focus();
+                // this.$refs['queryInput'].setSelectionRange(0, 10);
+            });
+        },
+        search(item, shift = false) {
+            if (this.query && !shift) {
+                chrome.tabs.update({
+                    url: item.url.replace('%s', this.query)
+                });
+                window.close();
+            } else {
+                chrome.tabs.create({
+                    url: item.url.replace('%s', this.query),
+                    index: this.tabIndex + 1,
+                });
+                // window.open(item.url.replace('%s', this.query));
+                window.close();
+            }
+        },
+        searchFirst(shift = false) {
+            this.search(this.engines[this.selectId], shift);
+        },
+        changeSelectId() {
+            this.selectId = (this.selectId + 1) % this.engines.length;
+        },
+        onKeyDown(e) {
+            // enter + shift
+            if (e.shiftKey && e.keyCode == 13) {
+                e.preventDefault();
+                this.searchFirst(true);
+                return false;
+            }
+            if (e.keyCode == 13) {
+                e.preventDefault();
+                this.searchFirst();
+                return false;
+            }
+            // tab
+            if (e.keyCode == 9) {
+                e.preventDefault();
+                this.changeSelectId();
+                return false;
+            }
+            return false;
+        },
+        // Options page button
+        setting() {
+            var url = chrome.extension.getURL('options.html');
+            window.open(url);
         }
     },
 
     created() {
         this.init();
+        window.addEventListener('keydown', this.onKeyDown);
     },
-
+    beforeDestroy() {
+        window.removeEventListener('keydown', this.onKeyDown);
+    },
     computed: {},
 
-    mounted() {}
+    mounted() { }
 };
 
 function parseUrl(url) {
