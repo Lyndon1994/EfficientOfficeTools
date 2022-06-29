@@ -1,0 +1,28 @@
+{
+    "extName": {"message": "Search Tool"},
+    "extDescription": {"message": "Quickly switch between customized search engines; Add a custom search engine in the right-click menu."},
+    "optionsSortId": {"message": "Sort ID"},
+    "optionsSortIdTip": {"message": "After saving, the field will be sorted from small to large"},
+    "optionsInPopup": {"message": "Popup"},
+    "optionsInPopupTip": {"message": "When selected, it will be displayed on the popup page (click the plug-in in the upper right corner of the browser to pop up the page)"},
+    "inRight": {"message": "Right-click"},
+    "inRightTip": {"message": "When selected, it will be displayed in the right-click menu (if only one is selected, it will appear in the top-level right-click menu)"},
+    "inShortcuts": {"message": "Shortcut switch"},
+    "inShortcutsTip": {"message": "When selected, the shortcut key can be switched in the search engine. For example, on the Baidu search page, press the shortcut key to quickly switch to Google search"},
+    "searchEngine": {"message": "Search Engine"},
+    "searchUrl": {"message": "Query url, %s alternative search term"},
+    "searchIcon": {"message": "Icon URL, usually the root address of the website + '/favicon ico'"},
+    "save": {"message": "Save"},
+    "create": {"message": "Create"},
+    "saved": {"message": "Saved successfully"},
+    "reseted": {"message": "Reset successful"},
+    "defaultEnginesConfig": {"message": "[{\"name\":\"Baidu\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"1\",\"inShortcuts\":true,\"inRight\":true,\"icon\":\"https://www.baidu.com/favicon.ico\"},{\"name\":\"Google\",\"url\":\"https://www.google.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":false,\"inShortcuts\":true,\"icon\":\"https://www.google.com/favicon.ico\"},{\"name\":\"Bing\",\"url\":\"https://www.bing.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"3\",\"inRight\":false,\"inShortcuts\":true,\"icon\":\"https://www.bing.com/favicon.ico\"}]"},
+    "searchFor": {
+        "message": "Search $engine$ for \"%s\"",
+        "placeholders": {
+            "engine": {
+                "content": "$1"
+            }
+        }
+    }
+}

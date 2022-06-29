@@ -1,10 +1,11 @@
 {
+	"default_locale": "en",
 	"background": {
 		"scripts": [
 			"js/background.js"
 		]
 	},
-	"description": "快速切换自定义搜索引擎；在右键菜单添加自定义搜索引擎。",
+	"description": "__MSG_extDescription__",
 	"homepage_url": "https://github.com/Lyndon1994/EfficientOfficeTools",
 	"icons": {
 		"16": "assets/logo.png",
@@ -14,15 +15,15 @@
 	},
 	"content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
 	"manifest_version": 2,
-	"name": "搜索助手",
+	"name": "__MSG_extName__",
 	"permissions": [
 		"contextMenus",
 		"activeTab",
 		"storage"
 	],
-	"short_name": "搜索助手",
+	"short_name": "__MSG_extName__",
 	"update_url": "https://clients2.google.com/service/update2/crx",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"commands": {
 		"toggle-search": {
 			"suggested_key": {
@@ -34,7 +35,7 @@
 	},
 	"browser_action": {
 		"default_icon": "assets/logo.png",
-		"default_title": "搜索助手",
+		"default_title": "__MSG_extName__",
 		"default_popup": "popup.html"
 	},
 	"options_ui": {

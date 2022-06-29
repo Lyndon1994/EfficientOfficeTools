@@ -37,7 +37,7 @@ export default {
     methods: {
         init() {
             let defaultConfig = {
-                'engines': '[{\"name\":\"百度\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"1\",\"inShortcuts\":true,\"inRight\":true},{\"name\":\"Google\",\"url\":\"https://www.google.com.hk/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":false,\"inShortcuts\":true}]'
+                'engines': chrome.i18n.getMessage('defaultEnginesConfig')
             }; // 默认配置
             // 读取数据，第一个参数是指定要读取的key以及设置默认值
             let that = this;

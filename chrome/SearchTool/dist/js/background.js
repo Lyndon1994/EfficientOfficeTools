@@ -13,13 +13,13 @@ chrome.contextMenus.onClicked.addListener(function (info, tab) {
 
 function addContextMenus() {
     chrome.contextMenus.removeAll();
-    let defaultConfig = { 'engines': '[{\"name\":\"百度\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"1\",\"inShortcuts\":true,\"inRight\":true},{\"name\":\"Google\",\"url\":\"https://www.google.com.hk/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":false,\"inShortcuts\":true}]' }; // 默认配置
+    let defaultConfig = { 'engines': chrome.i18n.getMessage('defaultEnginesConfig') }; // 默认配置
     chrome.storage.sync.get(defaultConfig, function (items) {
         let engines = JSON.parse(items.engines);
         engines.forEach(function (engine) {
             if (engine.name && engine.url && engine.inRight) {
                 chrome.contextMenus.create({
-                    "title": "使用" + engine.name + "搜索“%s”",
+                    "title": chrome.i18n.getMessage('searchFor', engine.name),
                     "id": engine.url,
                     "contexts": ["selection"]
                 });
@@ -38,7 +38,7 @@ chrome.runtime.onMessage.addListener(function(engines, sender, sendResponse)
     engines.forEach(function (engine) {
         if (engine.name && engine.url && engine.inRight) {
             chrome.contextMenus.create({
-                "title": "使用" + engine.name + "搜索“%s”",
+                "title": chrome.i18n.getMessage('searchFor', engine.name),
                 "id": engine.url,
                 "contexts": ["selection"]
             });
@@ -55,7 +55,7 @@ chrome.commands.onCommand.addListener(function (command) {
             let domain = tab.url.split('/')[2].split('.')[1];
             let query = urlObj['wd'] || urlObj['word'] || urlObj['w'] || urlObj['q'] || urlObj['query'];
             if (query) {
-                let defaultConfig = { 'engines': '[{\"name\":\"百度\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"1\",\"inShortcuts\":true,\"inRight\":true},{\"name\":\"Google\",\"url\":\"https://www.google.com.hk/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":false,\"inShortcuts\":true}]' }; // 默认配置
+                let defaultConfig = { 'engines': chrome.i18n.getMessage('defaultEnginesConfig') }; // 默认配置
                 chrome.storage.sync.get(defaultConfig, function (items) {
                     let engines = JSON.parse(items.engines);
                     if (engines.length < 1) {

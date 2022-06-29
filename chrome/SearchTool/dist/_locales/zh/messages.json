@@ -1,0 +1,28 @@
+{
+    "extName": {"message": "搜索助手"},
+    "extDescription": {"message": "快速切换自定义搜索引擎；在右键菜单添加自定义搜索引擎。"},
+    "optionsSortId": {"message": "排序ID"},
+    "optionsSortIdTip": {"message": "保存后将根据该字段从小到大排序"},
+    "optionsInPopup": {"message": "popup页面"},
+    "optionsInPopupTip": {"message": "选中后将展示在Popup页面（浏览器右上角点击插件弹出的页面）"},
+    "inRight": {"message": "右键菜单"},
+    "inRightTip": {"message": "选中后将展示在右键菜单（如果只选中一个，则会出现在右键顶级菜单）"},
+    "inShortcuts": {"message": "快捷切换"},
+    "inShortcutsTip": {"message": "选中后将支持快捷键在搜索引擎中切换，比如在百度搜索页面，按下快捷键，快速切换为Google搜索"},
+    "searchEngine": {"message": "搜索引擎"},
+    "searchUrl": {"message": "查询地址，%s替代检索词"},
+    "searchIcon": {"message": "icon url， 一般为网站根地址+/favicon.ico"},
+    "save": {"message": "保存"},
+    "create": {"message": "新增"},
+    "saved": {"message": "保存成功"},
+    "reseted": {"message": "重置成功"},
+    "defaultEnginesConfig": {"message": "[{\"name\":\"百度\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"1\",\"inShortcuts\":true,\"inRight\":true,\"icon\":\"https://www.baidu.com/favicon.ico\"},{\"name\":\"Google\",\"url\":\"https://www.google.com.hk/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":false,\"inShortcuts\":true,\"icon\":\"https://www.google.com.hk/favicon.ico\"},{\"name\":\"Bing\",\"url\":\"https://www.bing.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"3\",\"inRight\":false,\"inShortcuts\":true,\"icon\":\"https://www.bing.com/favicon.ico\"}]"},
+    "searchFor": {
+        "message": "使用$engine$搜索“%s”",
+        "placeholders": {
+            "engine": {
+                "content": "$1"
+            }
+        }
+    }
+}

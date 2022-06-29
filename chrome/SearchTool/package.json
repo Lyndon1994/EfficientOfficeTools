@@ -1,7 +1,7 @@
 {
-    "name": "search-assistant",
-    "version": "1.0.0",
-    "description": "搜索助手",
+    "name": "search-tool",
+    "version": "1.1.2",
+    "description": "Search Tool",
     "scripts": {
         "serve": "vue-cli-service build --watch",
         "crx": "node ./src/scripts/crx.js",
