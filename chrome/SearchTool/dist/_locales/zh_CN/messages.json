@@ -14,9 +14,10 @@
     "searchIcon": {"message": "icon url， 一般为网站根地址+/favicon.ico"},
     "save": {"message": "保存"},
     "create": {"message": "新增"},
+    "reset": {"message": "重置"},
     "saved": {"message": "保存成功"},
     "reseted": {"message": "重置成功"},
-    "defaultEnginesConfig": {"message": "[{\"name\":\"百度\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"1\",\"inShortcuts\":true,\"inRight\":true,\"icon\":\"https://www.baidu.com/favicon.ico\"},{\"name\":\"Google\",\"url\":\"https://www.google.com.hk/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":false,\"inShortcuts\":true,\"icon\":\"https://www.google.com.hk/favicon.ico\"},{\"name\":\"Bing\",\"url\":\"https://www.bing.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"3\",\"inRight\":false,\"inShortcuts\":true,\"icon\":\"https://www.bing.com/favicon.ico\"}]"},
+    "defaultEnginesConfig": {"message": "[{\"name\":\"百度\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"1\",\"inShortcuts\":true,\"inRight\":true,\"icon\":\"assets/baidu.png\"},{\"name\":\"Google\",\"url\":\"https://www.google.com.hk/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":true,\"inShortcuts\":true,\"icon\":\"assets/google.png\"},{\"name\":\"Bing\",\"url\":\"https://www.bing.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"3\",\"inRight\":true,\"inShortcuts\":true,\"icon\":\"assets/bing.png\"},{\"name\":\"搜狗\",\"url\":\"https://www.sogou.com/web?query=%s\",\"inPopup\":true,\"id\":\"4\",\"inRight\":true,\"inShortcuts\":false,\"icon\":\"assets/sougou.ico\"},{\"name\":\"豆瓣\",\"url\":\"https://www.douban.com/search?q=%s\",\"inPopup\":true,\"id\":\"5\",\"inRight\":true,\"inShortcuts\":false,\"icon\":\"assets/douban.ico\"}]"},
     "searchFor": {
         "message": "使用$engine$搜索“%s”",
         "placeholders": {
@@ -24,5 +25,7 @@
                 "content": "$1"
             }
         }
-    }
+    },
+    "tabTip": {"message": "按Tab键切换搜索引擎"},
+    "dontTip": {"message": "不再提示"}
 }

@@ -1,5 +1,4 @@
 <template>
-    <!-- // @submit.prevent.native="searchFirst"  -->
     <el-form ref="form" label-width="10px" size="mini" style="width: 300px; height: 70px;">
         <el-row>
             <el-input ref="queryInput" style="width: 300px" placeholder="Search ..." @focus="$event.target.select()"
@@ -8,12 +7,23 @@
             </el-input>
         </el-row>
         <el-row>
-            <el-tag v-for="(item, index) in engines" :key="item.id" :type="index == selectId ? 'success' : 'info'"
-                :hit="index == selectId" :color="index == selectId ? '':'Transparent'" @click="search(item)">
+            <el-tag v-for="(item, index) in engines" :key="item.id" :type="item.id - 1 == selectId ? 'success' : 'info'"
+                :hit="item.id - 1 == selectId" :color="item.id - 1 == selectId ? '':'Transparent'"
+                @click="search(item)" @mouseenter.native="selectSearch(item)">
                 <img v-if="item.icon" style="width: 30px; height: 30px;" :src="item.icon" />
                 <span v-if="!item.icon">{{ item.name }}</span>
             </el-tag>
             <i class="el-icon-setting" @click="setting()" style="cursor: pointer; position: absolute; top: 15px; right: 1px; opacity: 0.2;"></i>
+            <el-popover
+                trigger="manual"
+                placement="bottom"
+                width="160"
+                v-model="first">
+                <p>{{getMessage("tabTip")}}</p>
+                <div style="text-align: right; margin: 0">
+                    <el-button size="mini" type="text" @click="setFirst()">{{getMessage("dontTip")}}</el-button>
+                </div>
+            </el-popover>
         </el-row>
     </el-form>
 </template>
@@ -31,13 +41,16 @@ export default {
             query: "",
             selectId: 0,
             tabIndex: -1,
+            first: false,
         };
     },
 
     methods: {
         init() {
             let defaultConfig = {
-                'engines': chrome.i18n.getMessage('defaultEnginesConfig')
+                'engines': chrome.i18n.getMessage('defaultEnginesConfig'),
+                'first': true,
+                'selectId': 0
             }; // 默认配置
             // 读取数据，第一个参数是指定要读取的key以及设置默认值
             let that = this;
@@ -48,7 +61,10 @@ export default {
                         return item;
                     }
                 });
+                that.first = items.first;
+                that.selectId = items.selectId;
                 console.log(that.engines);
+                console.log(that.first);
             });
 
             chrome.tabs.getSelected(null, function (tab) {
@@ -63,7 +79,13 @@ export default {
                 // this.$refs['queryInput'].setSelectionRange(0, 10);
             });
         },
+        getMessage(key) {
+            return chrome.i18n.getMessage(key);
+        },
         search(item, shift = false) {
+            chrome.storage.sync.set({
+                selectId: this.selectId
+            });
             if (this.query && !shift) {
                 chrome.tabs.update({
                     url: item.url.replace('%s', this.query)
@@ -77,6 +99,12 @@ export default {
                 // window.open(item.url.replace('%s', this.query));
                 window.close();
             }
+        },
+        selectSearch(item) {
+            this.selectId = item.id - 1;
+            chrome.storage.sync.set({
+                selectId: this.selectId
+            });
         },
         searchFirst(shift = false) {
             this.search(this.engines[this.selectId], shift);
@@ -108,6 +136,12 @@ export default {
         setting() {
             var url = chrome.extension.getURL('options.html');
             window.open(url);
+        },
+        setFirst(){
+            this.first = false;
+            chrome.storage.sync.set({
+                first: false
+            });
         }
     },
 

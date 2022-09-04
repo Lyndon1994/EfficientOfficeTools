@@ -48,7 +48,7 @@
         <el-form-item>
             <el-button type="primary" @click="onSubmit">{{getMessage('save')}}</el-button>
             <el-button type="success" @click="addItem">{{getMessage('create')}}</el-button>
-            <!-- <el-button type="danger" @click="reset">恢复初始设置</el-button> -->
+            <el-button type="danger" @click="reset">{{getMessage('reset')}}</el-button>
         </el-form-item>
     </el-form>
 </template>
@@ -129,6 +129,7 @@ export default {
                 });
                 return true;
             });
+            location.reload();
         },
         getMessage(key) {
             return chrome.i18n.getMessage(key);

@@ -14,9 +14,10 @@
     "searchIcon": {"message": "Icon URL, usually the root address of the website + '/favicon ico'"},
     "save": {"message": "Save"},
     "create": {"message": "Create"},
+    "reset": {"message": "Reset"},
     "saved": {"message": "Saved successfully"},
     "reseted": {"message": "Reset successful"},
-    "defaultEnginesConfig": {"message": "[{\"name\":\"Baidu\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"1\",\"inShortcuts\":true,\"inRight\":true,\"icon\":\"https://www.baidu.com/favicon.ico\"},{\"name\":\"Google\",\"url\":\"https://www.google.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":false,\"inShortcuts\":true,\"icon\":\"https://www.google.com/favicon.ico\"},{\"name\":\"Bing\",\"url\":\"https://www.bing.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"3\",\"inRight\":false,\"inShortcuts\":true,\"icon\":\"https://www.bing.com/favicon.ico\"}]"},
+    "defaultEnginesConfig": {"message": "[{\"name\":\"Baidu\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"1\",\"inShortcuts\":true,\"inRight\":true,\"icon\":\"assets/baidu.png\"},{\"name\":\"Google\",\"url\":\"https://www.google.com.hk/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":false,\"inShortcuts\":true,\"icon\":\"assets/google.png\"},{\"name\":\"Bing\",\"url\":\"https://www.bing.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"3\",\"inRight\":false,\"inShortcuts\":true,\"icon\":\"assets/bing.png\"}]"},
     "searchFor": {
         "message": "Search $engine$ for \"%s\"",
         "placeholders": {
@@ -24,5 +25,7 @@
                 "content": "$1"
             }
         }
-    }
+    },
+    "tabTip": {"message": "Press Tab to switch the search engine"},
+    "dontTip": {"message": "Not prompt"}
 }
