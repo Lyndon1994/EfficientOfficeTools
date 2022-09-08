@@ -8,7 +8,9 @@ function parseUrl(url) {
 }
 
 chrome.contextMenus.onClicked.addListener(function (info, tab) {
-    window.open(info.menuItemId.replace('%s', encodeURIComponent(info.selectionText)));
+    chrome.tabs.create({
+        url: info.menuItemId.replace('%s', encodeURIComponent(info.selectionText))
+    });
 });
 
 function addContextMenus() {
@@ -50,7 +52,8 @@ chrome.runtime.onMessage.addListener(function(engines, sender, sendResponse)
 
 chrome.commands.onCommand.addListener(function (command) {
     if (command === 'toggle-search') {
-        chrome.tabs.getSelected(null, function (tab) {
+        chrome.tabs.query({active: true}, function (tabs) {
+            let tab = tabs[0];
             let urlObj = parseUrl(tab.url);
             let domain = tab.url.split('/')[2].split('.')[1];
             let query = urlObj['wd'] || urlObj['word'] || urlObj['w'] || urlObj['q'] || urlObj['query'];

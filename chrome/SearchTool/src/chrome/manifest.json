@@ -1,9 +1,7 @@
 {
 	"default_locale": "en",
 	"background": {
-		"scripts": [
-			"js/background.js"
-		]
+		"service_worker": "js/background.js"
 	},
 	"description": "__MSG_extDescription__",
 	"homepage_url": "https://github.com/Lyndon1994/EfficientOfficeTools",
@@ -13,8 +11,10 @@
 		"48": "assets/logo.png",
 		"128": "assets/logo.png"
 	},
-	"content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
-	"manifest_version": 2,
+	"content_security_policy": {
+		"extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+	},
+	"manifest_version": 3,
 	"name": "__MSG_extName__",
 	"permissions": [
 		"contextMenus",
@@ -22,8 +22,7 @@
 		"storage"
 	],
 	"short_name": "__MSG_extName__",
-	"update_url": "https://clients2.google.com/service/update2/crx",
-	"version": "1.1.4",
+	"version": "1.1.5",
 	"commands": {
 		"toggle-search": {
 			"suggested_key": {
@@ -33,15 +32,19 @@
 			"description": "Toggle Search Engine"
 		}
 	},
-	"browser_action": {
-		"default_icon": "assets/logo.png",
-		"default_title": "__MSG_extName__",
+	"action": {
 		"default_popup": "popup.html"
 	},
 	"options_ui": {
 		"page": "options.html"
 	},
 	"web_accessible_resources": [
-		"fonts/*"
+		{
+			"resources": [
+				"fonts/*"
+			],
+			"matches": [],
+			"extension_ids": []
+		}
 	]
 }

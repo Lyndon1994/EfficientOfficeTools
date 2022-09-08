@@ -67,7 +67,8 @@ export default {
                 console.log(that.first);
             });
 
-            chrome.tabs.getSelected(null, function (tab) {
+            chrome.tabs.query({active: true}, function (tabs) {
+                let tab = tabs[0];
                 let urlObj = parseUrl(tab.url);
                 that.query = urlObj['wd'] || urlObj['word'] || urlObj['w'] || urlObj['q'] || urlObj['query'] || "";
                 that.query = decodeURI(that.query);
@@ -96,7 +97,6 @@ export default {
                     url: item.url.replace('%s', this.query),
                     index: this.tabIndex + 1,
                 });
-                // window.open(item.url.replace('%s', this.query));
                 window.close();
             }
         },
@@ -134,8 +134,10 @@ export default {
         },
         // Options page button
         setting() {
-            var url = chrome.extension.getURL('options.html');
-            window.open(url);
+            var url = chrome.runtime.getURL('options.html');
+            chrome.tabs.create({
+                url: url
+            });
         },
         setFirst(){
             this.first = false;
