@@ -11,13 +11,13 @@
     "inShortcutsTip": {"message": "选中后将支持快捷键在搜索引擎中切换，比如在百度搜索页面，按下快捷键，快速切换为Google搜索"},
     "searchEngine": {"message": "搜索引擎"},
     "searchUrl": {"message": "查询地址，%s替代检索词"},
-    "searchIcon": {"message": "icon url， 一般为网站根地址+/favicon.ico"},
+    "searchIcon": {"message": "icon url"},
     "save": {"message": "保存"},
     "create": {"message": "新增"},
     "reset": {"message": "重置"},
     "saved": {"message": "保存成功"},
     "reseted": {"message": "重置成功"},
-    "defaultEnginesConfig": {"message": "[{\"name\":\"百度\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"1\",\"inShortcuts\":true,\"inRight\":true,\"icon\":\"assets/baidu.png\"},{\"name\":\"Google\",\"url\":\"https://www.google.com.hk/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":true,\"inShortcuts\":true,\"icon\":\"assets/google.png\"},{\"name\":\"Bing\",\"url\":\"https://www.bing.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"3\",\"inRight\":true,\"inShortcuts\":true,\"icon\":\"assets/bing.png\"},{\"name\":\"搜狗\",\"url\":\"https://www.sogou.com/web?query=%s\",\"inPopup\":true,\"id\":\"4\",\"inRight\":true,\"inShortcuts\":false,\"icon\":\"assets/sougou.ico\"},{\"name\":\"豆瓣\",\"url\":\"https://www.douban.com/search?q=%s\",\"inPopup\":true,\"id\":\"5\",\"inRight\":true,\"inShortcuts\":false,\"icon\":\"assets/douban.ico\"}]"},
+    "defaultEnginesConfig": {"message": "[{\"name\":\"百度\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"1\",\"inShortcuts\":true,\"inRight\":true,\"inTooltip\":true,\"icon\":\"assets/baidu.png\"},{\"name\":\"Google\",\"url\":\"https://www.google.com.hk/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":true,\"inShortcuts\":true,\"inTooltip\":true,\"icon\":\"assets/google.png\"},{\"name\":\"Bing\",\"url\":\"https://www.bing.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"3\",\"inRight\":true,\"inShortcuts\":true,\"inTooltip\":true,\"icon\":\"assets/bing.png\"},{\"name\":\"搜狗\",\"url\":\"https://www.sogou.com/web?query=%s\",\"inPopup\":true,\"id\":\"4\",\"inRight\":true,\"inShortcuts\":false,\"inTooltip\":true,\"icon\":\"assets/sougou.ico\"},{\"name\":\"豆瓣\",\"url\":\"https://www.douban.com/search?q=%s\",\"inPopup\":true,\"id\":\"5\",\"inRight\":true,\"inShortcuts\":false,\"inTooltip\":true,\"icon\":\"assets/douban.ico\"}]"},
     "searchFor": {
         "message": "使用$engine$搜索“%s”",
         "placeholders": {
@@ -27,5 +27,12 @@
         }
     },
     "tabTip": {"message": "按Tab键切换搜索引擎"},
-    "dontTip": {"message": "不再提示"}
+    "dontTip": {"message": "不再提示"},
+    "inTooltipTip": {"message": "是否显示在快捷菜单中"},
+    "inTooltip": {"message": "快捷菜单"},
+    "select2clipboardTip": {"message": "选中文本后是否自动复制到剪切板"},
+    "select2clipboard": {"message": "自动复制到剪切板"},
+    "showTooltipTip": {"message": "选中文本后是否显示快捷菜单"},
+    "showTooltip": {"message": "选中文本后是否显示快捷菜单"},
+    "copy": {"message": "复制"}
 }

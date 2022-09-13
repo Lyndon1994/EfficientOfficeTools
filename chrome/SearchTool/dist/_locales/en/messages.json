@@ -11,13 +11,13 @@
     "inShortcutsTip": {"message": "When selected, the shortcut key can be switched in the search engine. For example, on the Baidu search page, press the shortcut key to quickly switch to Google search"},
     "searchEngine": {"message": "Search Engine"},
     "searchUrl": {"message": "Query url, %s alternative search term"},
-    "searchIcon": {"message": "Icon URL, usually the root address of the website + '/favicon ico'"},
+    "searchIcon": {"message": "Icon URL"},
     "save": {"message": "Save"},
     "create": {"message": "Create"},
     "reset": {"message": "Reset"},
     "saved": {"message": "Saved successfully"},
     "reseted": {"message": "Reset successful"},
-    "defaultEnginesConfig": {"message": "[{\"name\":\"Baidu\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"1\",\"inShortcuts\":true,\"inRight\":true,\"icon\":\"assets/baidu.png\"},{\"name\":\"Google\",\"url\":\"https://www.google.com.hk/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":false,\"inShortcuts\":true,\"icon\":\"assets/google.png\"},{\"name\":\"Bing\",\"url\":\"https://www.bing.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"3\",\"inRight\":false,\"inShortcuts\":true,\"icon\":\"assets/bing.png\"}]"},
+    "defaultEnginesConfig": {"message": "[{\"name\":\"Google\",\"url\":\"https://www.google.com.hk/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"1\",\"inRight\":true,\"inShortcuts\":true,\"inTooltip\":true,\"icon\":\"assets/google.png\"},{\"name\":\"Bing\",\"url\":\"https://www.bing.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":true,\"inShortcuts\":true,\"inTooltip\":true,\"icon\":\"assets/bing.png\"},{\"name\":\"Baidu\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"3\",\"inShortcuts\":true,\"inRight\":true,\"inTooltip\":true,\"icon\":\"assets/baidu.png\"},{\"name\":\"Sogou\",\"url\":\"https://www.sogou.com/web?query=%s\",\"inPopup\":true,\"id\":\"4\",\"inRight\":true,\"inShortcuts\":false,\"inTooltip\":false,\"icon\":\"assets/sougou.ico\"},{\"name\":\"Douban\",\"url\":\"https://www.douban.com/search?q=%s\",\"inPopup\":true,\"id\":\"5\",\"inRight\":true,\"inShortcuts\":false,\"inTooltip\":false,\"icon\":\"assets/douban.ico\"}]"},
     "searchFor": {
         "message": "Search $engine$ for \"%s\"",
         "placeholders": {
@@ -27,5 +27,12 @@
         }
     },
     "tabTip": {"message": "Press Tab to switch the search engine"},
-    "dontTip": {"message": "Not prompt"}
+    "dontTip": {"message": "Not prompt"},
+    "inTooltipTip": {"message": "Whether to display in the shortcut menu?"},
+    "inTooltip": {"message": "Shortcut Menu"},
+    "select2clipboardTip": {"message": "Whether text is automatically copied to the clipboard when selected?"},
+    "select2clipboard": {"message": "Automatically copy after selecting text"},
+    "showTooltipTip": {"message": "Whether to display a shortcut menu after selecting text"},
+    "showTooltip": {"message": "Display a shortcut menu after selecting text"},
+    "copy": {"message": "Copy"}
 }

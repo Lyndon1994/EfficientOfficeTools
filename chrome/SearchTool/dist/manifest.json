@@ -22,7 +22,7 @@
 		"storage"
 	],
 	"short_name": "__MSG_extName__",
-	"version": "1.1.5",
+	"version": "1.2.0",
 	"commands": {
 		"toggle-search": {
 			"suggested_key": {
@@ -45,6 +45,15 @@
 			],
 			"matches": [],
 			"extension_ids": []
+		}
+	],
+	"content_scripts": [
+		{
+			"all_frames": true,
+			"matches": ["<all_urls>"],
+		  	"js": ["js/content.js"],
+			"css": [ "css/content.css" ],
+			"run_at": "document_end"
 		}
 	]
 }

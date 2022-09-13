@@ -4,7 +4,8 @@
             <el-row>
                 <el-col :span="2">
                     <el-tooltip class="item" effect="dark" :content="getMessage('optionsSortIdTip')" placement="top">
-                        <el-input size="mini" :placeholder="getMessage('optionsSortId')" v-model="item.id" style="width: 70px"></el-input>
+                        <el-input size="mini" :placeholder="getMessage('optionsSortId')" v-model="item.id"
+                            style="width: 70px"></el-input>
                     </el-tooltip>
                 </el-col>
                 <el-col :span="3">
@@ -18,15 +19,20 @@
                     </el-tooltip>
                 </el-col>
                 <el-col :span="4">
-                    <el-tooltip class="item" effect="dark" :content="getMessage('inShortcutsTip')"
-                        placement="top">
+                    <el-tooltip class="item" effect="dark" :content="getMessage('inShortcutsTip')" placement="top">
                         <el-switch v-model="item.inShortcuts" :active-text="getMessage('inShortcuts')"></el-switch>
+                    </el-tooltip>
+                </el-col>
+                <el-col :span="4">
+                    <el-tooltip class="item" effect="dark" :content="getMessage('inTooltipTip')" placement="top">
+                        <el-switch v-model="item.inTooltip" :active-text="getMessage('inTooltip')"></el-switch>
                     </el-tooltip>
                 </el-col>
             </el-row>
             <el-row>
                 <el-col :span="3">
-                    <el-input :placeholder="getMessage('searchEngine')" v-model="item.name" style="width: 100px"></el-input>
+                    <el-input :placeholder="getMessage('searchEngine')" v-model="item.name" style="width: 100px">
+                    </el-input>
                 </el-col>
                 <el-col :span="9">
                     <el-input :placeholder="getMessage('searchUrl')" v-model="item.url" style="width: 360px"></el-input>
@@ -38,22 +44,39 @@
                 <el-col :span="1">
                     <el-button type="danger" icon="el-icon-delete" @click="delItem(item.id)" circle></el-button>
                 </el-col>
+                <el-col :span="1" v-if="item.id == engines.length">
+                    <el-button type="info" icon="el-icon-plus" @click="addItem" circle></el-button>
+                </el-col>
             </el-row>
         </el-form-item>
 
-        <el-form-item label="" hidden>
-            <el-input type="textarea" v-model="logmsg"></el-input>
+        <el-form-item label="">
+            <el-tooltip class="item" effect="dark" :content="getMessage('select2clipboardTip')" placement="top">
+                <el-switch v-model="settings.select2clipboard" :active-text="getMessage('select2clipboard')">
+                </el-switch>
+            </el-tooltip>
+        </el-form-item>
+        <el-form-item label="">
+            <el-tooltip class="item" effect="dark" :content="getMessage('showTooltipTip')" placement="top">
+                <el-switch v-model="settings.showTooltip" :active-text="getMessage('showTooltip')"></el-switch>
+            </el-tooltip>
         </el-form-item>
 
+        <!-- <el-form-item label="" hidden>
+            <el-input type="textarea" v-model="logmsg"></el-input>
+        </el-form-item> -->
+
         <el-form-item>
-            <el-button type="primary" @click="onSubmit">{{getMessage('save')}}</el-button>
-            <el-button type="success" @click="addItem">{{getMessage('create')}}</el-button>
+            <!-- <el-button type="primary" @click="onSubmit">{{getMessage('save')}}</el-button> -->
+            <!-- <el-button type="success" @click="addItem">{{getMessage('create')}}</el-button> -->
             <el-button type="danger" @click="reset">{{getMessage('reset')}}</el-button>
         </el-form-item>
     </el-form>
 </template>
 
 <script>
+var debounce = require('lodash.debounce');
+
 /* eslint-disable */
 export default {
     name: "App",
@@ -63,7 +86,11 @@ export default {
     data() {
         return {
             logmsg: "", // options页面consolo.log打印不出来，用这个输出到页面中
-            engines: [], // engines: [{"name":"百度","url":"https://www.baidu.com/s?wd=%s","inPopup":true,"id":"1","inShortcuts":true,"inRight":true},{"name":"Google","url":"https://www.google.com.hk/search?ie=utf-8&q=%s","inPopup":true,"id":"2","inRight":false,"inShortcuts":true}],
+            engines: [],
+            settings: {
+                select2clipboard: false,
+                showTooltip: true,
+            }
         };
     },
 
@@ -71,11 +98,15 @@ export default {
         init() {
             let defaultConfig = {
                 engines: this.getMessage('defaultEnginesConfig'),
+                select2clipboard: false,
+                showTooltip: true,
             }; // 默认配置
             // 读取数据，第一个参数是指定要读取的key以及设置默认值
             let that = this;
             chrome.storage.sync.get(defaultConfig, function (items) {
                 that.engines = JSON.parse(items.engines);
+                that.settings.select2clipboard = items.select2clipboard;
+                that.settings.showTooltip = items.showTooltip;
                 return true;
             });
         },
@@ -92,55 +123,86 @@ export default {
             });
         },
         onSubmit() {
-            this.logmsg += "submit!";
             let that = this;
             this.engines = sortByKey(this.engines, "id");
             let offset = 0;
             this.engines = this.engines.filter((item) => {
-                if (item.name && item.url) {
-                    offset++;
-                    item.id = offset;
-                    return item;
-                }
+                // 如果过滤，自动保存会有问题。
+                // if (item.name && item.url) {
+                offset++;
+                item.id = offset;
+                return item;
+                // }
             });
             // 发送给background.js，更新右键菜单
             chrome.runtime.sendMessage(this.engines, function (response) {
                 console.log(response);
             });
             chrome.storage.sync.set({
-                engines: JSON.stringify(this.engines)
+                engines: JSON.stringify(this.engines),
+                select2clipboard: this.settings.select2clipboard,
+                showTooltip: this.settings.showTooltip,
             },
                 function () {
-                    that.logmsg += that.getMessage('saved');
-                    that.$message({
-                        message: that.getMessage('saved'),
-                        type: "success",
-                    });
+                    console.log("saved");
+                    // that.$message({
+                    //     message: that.getMessage('saved'),
+                    //     type: "success",
+                    // });
                     return true;
                 }
             );
         },
         reset() {
             let that = this;
-            chrome.storage.sync.clear(function (items) {
-                that.$message({
-                    message: that.getMessage('reseted'),
-                    type: "success",
+            this.$confirm(that.getMessage('reset') + '?', 'Confirm', {
+                confirmButtonText: 'Yes',
+                cancelButtonText: 'No',
+                type: 'warning'
+            }).then(() => {
+                chrome.storage.sync.clear(function (items) {
+                    that.$message({
+                        message: that.getMessage('reseted'),
+                        type: "success",
+                    });
+                    return true;
                 });
-                return true;
+                location.reload();
+            }).catch(() => {
             });
-            location.reload();
         },
         getMessage(key) {
             return chrome.i18n.getMessage(key);
-        }
+        },
+        autosave: debounce(function (val, old) {
+            if (JSON.stringify(val) != JSON.stringify(old)) {
+                this.onSubmit()
+            }
+        }, 1000)
     },
 
     created() {
         this.init();
     },
 
-    computed: {},
+    computed: {
+        newForm() {
+            return JSON.parse(JSON.stringify([this.engines, this.settings]))
+        }
+    },
+
+    watch: {
+        newForm: {
+            handler(curVal, oldVal) {
+                if (this.isWatch) {
+                    this.autosave(curVal, oldVal)
+                } else {
+                    this.isWatch = true;
+                }
+            },
+            deep: true
+        }
+    },
 
     mounted() { },
 };

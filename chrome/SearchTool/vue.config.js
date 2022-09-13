@@ -17,6 +17,14 @@ const copyFiles = [
     to: path.resolve("dist/js/background.js")
   },
   {
+    from: path.resolve("src/chrome/content/index.js"),
+    to: path.resolve("dist/js/content.js")
+  },
+  {
+    from: path.resolve("src/chrome/content/content.css"),
+    to: path.resolve("dist/css/content.css")
+  },
+  {
     from: path.resolve("src/_locales"),
     to: path.resolve("dist/_locales")
   }
