@@ -22,7 +22,7 @@
 		"storage"
 	],
 	"short_name": "__MSG_extName__",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"commands": {
 		"toggle-search": {
 			"suggested_key": {

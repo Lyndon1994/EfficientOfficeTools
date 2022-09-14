@@ -39,9 +39,22 @@ function createTooltip(e) {
     var y = e.pageY;
     var tooltip = '<div id="strong_search_menu_id" class="addon_xlj_toobar"style="position: absolute; left: {x}px; top: {y}px; z-index: 100000000;">';
     
+    var reg = /(\w+[^\s]+(\.[^\s]+){1,})/;
+    var ret = reg.exec(selectTxt);
+    if (ret) {
+        var url = ret[1].trim();
+        var openTip = chrome.i18n.getMessage('open');
+        var copyBtn = `<div class="addon_xlj_copy_toobar addon_xlj_button"title="${openTip} ${url}">
+        <img class="addon_xlj_search_icon" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/PjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+PHN2ZyB0PSIxNjUxNTgwNDU1NTcwIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9Ijk0MiIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZGVmcz48c3R5bGUgdHlwZT0idGV4dC9jc3MiPjwvc3R5bGU+PC9kZWZzPjxwYXRoIGQ9Ik04MzIgMTI4SDY0MHY2NGgxNDYuNzUyTDUyMS4zNzYgNDU3LjM3Nmw0NS4yNDggNDUuMjQ4TDgzMiAyMzcuMjQ4VjM4NGg2NFYxMjh6IiBmaWxsPSIjZmZmZmZmIiBwLWlkPSI5NDMiPjwvcGF0aD48cGF0aCBkPSJNNzY4IDgzMkgxOTJWMjU2aDM1MnYtNjRIMTYwYTMyIDMyIDAgMCAwLTMyIDMydjY0MGEzMiAzMiAwIDAgMCAzMiAzMmg2NDBhMzIgMzIgMCAwIDAgMzItMzJWNDgwaC02NHYzNTJ6IiBmaWxsPSIjZmZmZmZmIiBwLWlkPSI5NDQiPjwvcGF0aD48L3N2Zz4=">
+        <div class="addon_xlj_func addon_xlj_link_color" onclick="window.open('${url}')">${openTip}</div></div>`;
+        tooltip = tooltip + copyBtn;
+    }
+
     var copyTip = chrome.i18n.getMessage('copy');
     if (!addonConfig.select2clipboard) {
-        var copyBtn = `<div class="addon_xlj_copy_toobar addon_xlj_button"title="${copyTip}"><div class="addon_xlj_func addon_xlj_link_color" onclick="navigator.clipboard.writeText('${selectTxt}')">${copyTip}</div></div>`;
+        var copyBtn = `<div class="addon_xlj_copy_toobar addon_xlj_button"title="${copyTip}">
+        <img class="addon_xlj_search_icon" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/PjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+PHN2ZyB0PSIxNjU1Nzc5ODc4NDY4IiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjE0MTciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+PGRlZnM+PHN0eWxlIHR5cGU9InRleHQvY3NzIj5AZm9udC1mYWNlIHsgZm9udC1mYW1pbHk6IGZlZWRiYWNrLWljb25mb250OyBzcmM6IHVybCgiLy9hdC5hbGljZG4uY29tL3QvZm9udF8xMDMxMTU4X3U2OXc4eWh4ZHUud29mZjI/dD0xNjMwMDMzNzU5OTQ0IikgZm9ybWF0KCJ3b2ZmMiIpLCB1cmwoIi8vYXQuYWxpY2RuLmNvbS90L2ZvbnRfMTAzMTE1OF91Njl3OHloeGR1LndvZmY/dD0xNjMwMDMzNzU5OTQ0IikgZm9ybWF0KCJ3b2ZmIiksIHVybCgiLy9hdC5hbGljZG4uY29tL3QvZm9udF8xMDMxMTU4X3U2OXc4eWh4ZHUudHRmP3Q9MTYzMDAzMzc1OTk0NCIpIGZvcm1hdCgidHJ1ZXR5cGUiKTsgfQo8L3N0eWxlPjwvZGVmcz48cGF0aCBkPSJNMzc3IDQzMmgzNDlhOCA4IDAgMCAxIDggOHY0OGE4IDggMCAwIDEtOCA4SDM3N2E4IDggMCAwIDEtOC04di00OGE4IDggMCAwIDEgOC04eiBtMCAxNjBoMjU4YTggOCAwIDAgMSA4IDh2NDhhOCA4IDAgMCAxLTggOEgzNzdhOCA4IDAgMCAxLTgtOHYtNDhhOCA4IDAgMCAxIDgtOHogbS02NS0yODB2NTc2aDQ4MFYzMTJIMzEyeiBtLTQwLTcyaDU2MGMxNy42NzMgMCAzMiAxNC4zMjcgMzIgMzJ2NjU2YzAgMTcuNjczLTE0LjMyNyAzMi0zMiAzMkgyNzJjLTE3LjY3MyAwLTMyLTE0LjMyNy0zMi0zMlYyNzJjMC0xNy42NzMgMTQuMzI3LTMyIDMyLTMyeiBtLTg4LTU2djY2NGE4IDggMCAwIDEtOCA4aC01NmE4IDggMCAwIDEtOC04VjE0NGMwLTE3LjY3MyAxNC4zMjctMzIgMzItMzJoNjMyYTggOCAwIDAgMSA4IDh2NTZhOCA4IDAgMCAxLTggOEgxODR6IiBmaWxsPSIjZmZmZmZmIiBwLWlkPSIxNDE4Ij48L3BhdGg+PC9zdmc+">
+        <div class="addon_xlj_func addon_xlj_link_color" onclick="navigator.clipboard.writeText('${selectTxt}')">${copyTip}</div></div>`;
         tooltip = tooltip + copyBtn;
     }
 
@@ -63,7 +76,7 @@ function createTooltip(e) {
     }
     
     tooltip += '</div>';
-    tooltip = tooltip.replace('{x}', x + 10).replace('{y}', y + 10)
+    tooltip = tooltip.replace('{x}', x + 5).replace('{y}', y + 20)
     var tooltipEl = document.createElement("div");
     tooltipEl.id = 'addon_tooltip';
     tooltipEl.innerHTML = tooltip;
@@ -81,5 +94,5 @@ document.addEventListener('mouseup', function (event) {
         if (addonConfig.showTooltip && selectTxt) {
             createTooltip(event);
         }
-    }, 200);
+    }, 100);
 });

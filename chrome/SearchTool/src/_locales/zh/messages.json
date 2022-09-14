@@ -34,5 +34,6 @@
     "select2clipboard": {"message": "自动复制到剪切板"},
     "showTooltipTip": {"message": "选中文本后是否显示快捷菜单"},
     "showTooltip": {"message": "选中文本后是否显示快捷菜单"},
-    "copy": {"message": "复制"}
+    "copy": {"message": "复制"},
+    "open": {"message": "打开"}
 }

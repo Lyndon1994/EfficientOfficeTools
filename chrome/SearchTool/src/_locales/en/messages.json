@@ -34,5 +34,6 @@
     "select2clipboard": {"message": "Automatically copy after selecting text"},
     "showTooltipTip": {"message": "Whether to display a shortcut menu after selecting text"},
     "showTooltip": {"message": "Display a shortcut menu after selecting text"},
-    "copy": {"message": "Copy"}
+    "copy": {"message": "Copy"},
+    "open": {"message": "Open"}
 }
