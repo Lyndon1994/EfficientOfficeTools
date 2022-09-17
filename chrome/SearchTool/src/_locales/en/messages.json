@@ -34,6 +34,10 @@
     "select2clipboard": {"message": "Automatically copy after selecting text"},
     "showTooltipTip": {"message": "Whether to display a shortcut menu after selecting text"},
     "showTooltip": {"message": "Display a shortcut menu after selecting text"},
+    "showTopSearchSwitchTip": {"message": "Whether to display a shortcut toggle menu at the top of the search page (depends on it is in popup page)"},
+    "showTopSearchSwitch": {"message": "Top switch menu in search page"},
     "copy": {"message": "Copy"},
-    "open": {"message": "Open"}
+    "open": {"message": "Open"},
+    "refresh": {"message": "It takes effect after the page is refreshed."},
+    "comment": {"message": "If you like it, please give a comment, thanks! <a href='https://chrome.google.com/webstore/detail/search-tool/fjjkihnjlinkjpfeooipegebcakeocef'>Click here.</a> 😊"}
 }

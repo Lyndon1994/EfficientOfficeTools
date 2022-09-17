@@ -34,6 +34,10 @@
     "select2clipboard": {"message": "自动复制到剪切板"},
     "showTooltipTip": {"message": "选中文本后是否显示快捷菜单"},
     "showTooltip": {"message": "选中文本后是否显示快捷菜单"},
+    "showTopSearchSwitchTip": {"message": "是否在搜索页面顶部展示快捷切换菜单"},
+    "showTopSearchSwitch": {"message": "搜索页面顶部展示快捷切换菜单"},
     "copy": {"message": "复制"},
-    "open": {"message": "打开"}
+    "open": {"message": "打开"},
+    "refresh": {"message": "刷新页面后生效"},
+    "comment": {"message": "如果你觉得还挺好用的，或者有些建议，帮忙给个评论吧，谢谢！ <a href='https://chrome.google.com/webstore/detail/search-tool/fjjkihnjlinkjpfeooipegebcakeocef'>快戳这里</a>😊"}
 }

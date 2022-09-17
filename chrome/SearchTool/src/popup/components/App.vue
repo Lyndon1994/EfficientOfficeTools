@@ -70,7 +70,7 @@ export default {
             chrome.tabs.query({active: true}, function (tabs) {
                 let tab = tabs[0];
                 let urlObj = parseUrl(tab.url);
-                that.query = urlObj['wd'] || urlObj['word'] || urlObj['w'] || urlObj['q'] || urlObj['query'] || "";
+                that.query = urlObj['wd'] || urlObj['word'] || urlObj['q'] || urlObj['query'] || urlObj['w'] || "";
                 that.query = decodeURI(that.query);
                 that.tabIndex = tab.index;
             });

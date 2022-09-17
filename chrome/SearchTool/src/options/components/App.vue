@@ -61,7 +61,11 @@
                 <el-switch v-model="settings.showTooltip" :active-text="getMessage('showTooltip')"></el-switch>
             </el-tooltip>
         </el-form-item>
-
+        <el-form-item label="">
+            <el-tooltip class="item" effect="dark" :content="getMessage('showTopSearchSwitchTip')" placement="top">
+                <el-switch v-model="settings.showTopSearchSwitch" :active-text="getMessage('showTopSearchSwitch')"></el-switch>
+            </el-tooltip>
+        </el-form-item>
         <!-- <el-form-item label="" hidden>
             <el-input type="textarea" v-model="logmsg"></el-input>
         </el-form-item> -->
@@ -71,7 +75,8 @@
             <!-- <el-button type="success" @click="addItem">{{getMessage('create')}}</el-button> -->
             <el-button type="danger" @click="reset">{{getMessage('reset')}}</el-button>
         </el-form-item>
-    </el-form>
+</el-form>
+
 </template>
 
 <script>
@@ -85,11 +90,13 @@ export default {
 
     data() {
         return {
+            openHiTip: false,
             logmsg: "", // options页面consolo.log打印不出来，用这个输出到页面中
             engines: [],
             settings: {
                 select2clipboard: false,
-                showTooltip: true,
+                showTooltip: false,
+                showTopSearchSwitch: true,
             }
         };
     },
@@ -99,7 +106,8 @@ export default {
             let defaultConfig = {
                 engines: this.getMessage('defaultEnginesConfig'),
                 select2clipboard: false,
-                showTooltip: true,
+                showTooltip: false,
+                showTopSearchSwitch: true,
             }; // 默认配置
             // 读取数据，第一个参数是指定要读取的key以及设置默认值
             let that = this;
@@ -107,6 +115,7 @@ export default {
                 that.engines = JSON.parse(items.engines);
                 that.settings.select2clipboard = items.select2clipboard;
                 that.settings.showTooltip = items.showTooltip;
+                that.settings.showTopSearchSwitch = items.showTopSearchSwitch;
                 return true;
             });
         },
@@ -142,13 +151,14 @@ export default {
                 engines: JSON.stringify(this.engines),
                 select2clipboard: this.settings.select2clipboard,
                 showTooltip: this.settings.showTooltip,
+                showTopSearchSwitch: this.settings.showTopSearchSwitch,
             },
                 function () {
                     console.log("saved");
-                    // that.$message({
-                    //     message: that.getMessage('saved'),
-                    //     type: "success",
-                    // });
+                    that.$message({
+                        message: that.getMessage('saved') + ". " + that.getMessage('refresh'),
+                        type: "success",
+                    });
                     return true;
                 }
             );
@@ -176,9 +186,21 @@ export default {
         },
         autosave: debounce(function (val, old) {
             if (JSON.stringify(val) != JSON.stringify(old)) {
-                this.onSubmit()
+                this.onSubmit();
+                if (!this.openHiTip) {
+                    this.openHi();
+                    this.openHiTip = true;
+                }
             }
-        }, 1000)
+        }, 1000),
+        openHi() {
+            this.$notify({
+            title: 'Hi',
+            dangerouslyUseHTMLString: true,
+            message: this.getMessage('comment'),
+            duration: 0
+            });
+        }
     },
 
     created() {
