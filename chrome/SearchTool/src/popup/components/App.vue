@@ -56,8 +56,11 @@ export default {
             let that = this;
             chrome.storage.sync.get(defaultConfig, function (items) {
                 that.engines = JSON.parse(items.engines);
+                let offset = 0;
                 that.engines = that.engines.filter(item => {
                     if (item.name && item.url && item.inPopup === true) {
+                        offset++;
+                        item.id = offset;
                         return item;
                     }
                 });
@@ -65,6 +68,11 @@ export default {
                 that.selectId = items.selectId;
                 console.log(that.engines);
                 console.log(that.first);
+                console.log("get with selectId " + that.selectId);
+                if (that.selectId >= that.engines.length) {
+                    that.selectId = 0;
+                    console.log("change selectId to "+that.selectId);
+                }
             });
 
             chrome.tabs.query({active: true}, function (tabs) {
@@ -87,12 +95,13 @@ export default {
             chrome.storage.sync.set({
                 selectId: this.selectId
             });
+            this.query = this.query.trim();
             if (this.query && !shift) {
                 chrome.tabs.update({
                     url: item.url.replace('%s', this.query)
                 });
                 window.close();
-            } else {
+            } else if(this.query) {
                 chrome.tabs.create({
                     url: item.url.replace('%s', this.query),
                     index: this.tabIndex + 1,
@@ -102,9 +111,6 @@ export default {
         },
         selectSearch(item) {
             this.selectId = item.id - 1;
-            chrome.storage.sync.set({
-                selectId: this.selectId
-            });
         },
         searchFirst(shift = false) {
             this.search(this.engines[this.selectId], shift);

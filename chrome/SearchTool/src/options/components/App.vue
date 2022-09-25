@@ -1,12 +1,16 @@
 <template>
     <el-form ref="form" label-width="10px" size="mini" style="width: 1000px; height: 500px;">
-        <el-form-item label="" v-for="item in engines" :key="item.id" :gutter="12">
+        <draggable v-model="engines" @end="onDragEnd" handle=".handle">
+                <transition-group>
+        <el-form-item label="" v-for="(item, index) in engines" :key="item.id" :gutter="12">
             <el-row>
+                <el-col :span="1">
+                    <i class="el-icon-rank handle"></i>
+                    <!-- <el-tag size="small">{{item.id}}</el-tag> -->
+                </el-col>
                 <el-col :span="2">
-                    <el-tooltip class="item" effect="dark" :content="getMessage('optionsSortIdTip')" placement="top">
-                        <el-input size="mini" :placeholder="getMessage('optionsSortId')" v-model="item.id"
-                            style="width: 70px"></el-input>
-                    </el-tooltip>
+                    <el-input :placeholder="getMessage('searchEngine')" v-model="item.name" style="width: 80px">
+                    </el-input>
                 </el-col>
                 <el-col :span="3">
                     <el-tooltip class="item" effect="dark" :content="getMessage('optionsInPopupTip')" placement="top">
@@ -30,15 +34,12 @@
                 </el-col>
             </el-row>
             <el-row>
-                <el-col :span="3">
-                    <el-input :placeholder="getMessage('searchEngine')" v-model="item.name" style="width: 100px">
-                    </el-input>
-                </el-col>
                 <el-col :span="9">
-                    <el-input :placeholder="getMessage('searchUrl')" v-model="item.url" style="width: 360px"></el-input>
+                    <el-input :placeholder="getMessage('searchUrl')" v-model="item.url" @input="changeSearchUrl(item)" style="width: 360px"></el-input>
                 </el-col>
-                <el-col :span="6">
-                    <el-input :placeholder="getMessage('searchIcon')" v-model="item.icon" style="width: 240px">
+                <el-col :span="8">
+                    <el-input :placeholder="getMessage('searchIcon')" v-model="item.icon" style="width: 320px">
+                        <img slot="append" :src="item.icon" alt="" height="20px">
                     </el-input>
                 </el-col>
                 <el-col :span="1">
@@ -49,6 +50,8 @@
                 </el-col>
             </el-row>
         </el-form-item>
+        </transition-group>
+        </draggable>
 
         <el-form-item label="">
             <el-tooltip class="item" effect="dark" :content="getMessage('select2clipboardTip')" placement="top">
@@ -66,9 +69,6 @@
                 <el-switch v-model="settings.showTopSearchSwitch" :active-text="getMessage('showTopSearchSwitch')"></el-switch>
             </el-tooltip>
         </el-form-item>
-        <!-- <el-form-item label="" hidden>
-            <el-input type="textarea" v-model="logmsg"></el-input>
-        </el-form-item> -->
 
         <el-form-item>
             <!-- <el-button type="primary" @click="onSubmit">{{getMessage('save')}}</el-button> -->
@@ -81,12 +81,13 @@
 
 <script>
 var debounce = require('lodash.debounce');
+import draggable from 'vuedraggable'
 
 /* eslint-disable */
 export default {
     name: "App",
 
-    components: {},
+    components: {draggable},
 
     data() {
         return {
@@ -119,6 +120,18 @@ export default {
                 return true;
             });
         },
+        onDragEnd() {
+            console.log(this.engines, "form.engines");
+        },
+        changeSearchUrl(item) {
+            if (!item.icon) {
+                let reg = /(https?\:\/\/[^\/]+).*\?.*/;
+                let ret = reg.exec(item.url);
+                if (ret) {
+                    item.icon = ret[1].trim() + "/favicon.ico";
+                }
+            }
+        },
         addItem() {
             this.engines.push({
                 id: this.engines.length + 1
@@ -133,7 +146,6 @@ export default {
         },
         onSubmit() {
             let that = this;
-            this.engines = sortByKey(this.engines, "id");
             let offset = 0;
             this.engines = this.engines.filter((item) => {
                 // 如果过滤，自动保存会有问题。
@@ -228,12 +240,4 @@ export default {
 
     mounted() { },
 };
-
-function sortByKey(array, key) {
-    return array.sort(function (a, b) {
-        var x = a[key];
-        var y = b[key];
-        return x < y ? -1 : x > y ? 1 : 0;
-    });
-}
 </script>

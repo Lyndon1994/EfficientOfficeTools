@@ -4,7 +4,7 @@
 		"service_worker": "js/background.js"
 	},
 	"description": "__MSG_extDescription__",
-	"homepage_url": "https://github.com/Lyndon1994/EfficientOfficeTools",
+	"homepage_url": "https://github.com/Lyndon1994/EfficientOfficeTools/tree/main/chrome/SearchTool",
 	"icons": {
 		"16": "assets/logo.png",
 		"32": "assets/logo.png",
@@ -22,7 +22,7 @@
 		"storage"
 	],
 	"short_name": "__MSG_extName__",
-	"version": "1.2.2",
+	"version": "1.2.3",
 	"commands": {
 		"toggle-search": {
 			"suggested_key": {

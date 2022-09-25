@@ -154,12 +154,15 @@ function createTopTooltip() {
     var pinTooltip = '<div id="strong_search_menu_id" class="addon_xlj_toobar"style="position: fixed; left: 60%; top: 0px; z-index: 100000000;">';
     var inTooltipCount = 0;
     var searchContent = '<div class="addon_xlj_button">';
+    var urlObj = parseUrl(window.location.href);
+    var query = urlObj['wd'] || urlObj['word'] || urlObj['query'] || urlObj['q'] || urlObj['w'] || "";
+    query = decodeURI(query);
+    if (!query) {
+        return;
+    }
     addonConfig.engines.forEach(engine => {
         if (engine.name && engine.url && engine.inPopup) {
             inTooltipCount += 1;
-            let urlObj = parseUrl(window.location.href);
-            var query = urlObj['wd'] || urlObj['word'] || urlObj['query'] || urlObj['q'] || urlObj['w'] || "";
-            query = decodeURI(query);
             var url = engine.url.replace('%s', encodeURIComponent(query));
             searchContent += `<div class="addon_xlj_search_parts_engine addon_xlj_link_color" data-url="${url}" title="${engine.name}" onclick="window.open('${url}')">${engine.name}</div>`;
         }
@@ -180,8 +183,8 @@ function createTopTooltip() {
 }
 
 function parseUrl(url) {
-    let obj = {}
-    let reg = /([^?=&]+)=([^?=&]+)/g
+    var obj = {}
+    var reg = /([^?=&]+)=([^?=&]+)/g
     url.replace(reg, function () {
         obj[arguments[1]] = arguments[2]
     })
