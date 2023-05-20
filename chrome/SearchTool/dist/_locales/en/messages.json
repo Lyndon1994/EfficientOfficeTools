@@ -26,7 +26,7 @@
             }
         }
     },
-    "tabTip": {"message": "Press Tab to switch the search engine"},
+    "tabTip": {"message": "Press Tab to switch engine, enter to search. Alt/MacCtrl+S to toggle search."},
     "dontTip": {"message": "Not prompt"},
     "inTooltipTip": {"message": "Whether to display in the shortcut menu?"},
     "inTooltip": {"message": "Shortcut Menu"},
@@ -36,8 +36,12 @@
     "showTooltip": {"message": "Display a shortcut menu after selecting text"},
     "showTopSearchSwitchTip": {"message": "Whether to display a shortcut toggle menu at the top of the search page (depends on it is in popup page)"},
     "showTopSearchSwitch": {"message": "Top switch menu in search page"},
+    "searchInNewTabTip": {"message": "Open a new tab to search."},
+    "searchInNewTab": {"message": "Search in a new window"},
+    "themeColorTip": {"message": "Theme color"},
     "copy": {"message": "Copy"},
     "open": {"message": "Open"},
     "refresh": {"message": "It takes effect after the page is refreshed."},
-    "comment": {"message": "If you like it, please give a comment, thanks! <a href='https://chrome.google.com/webstore/detail/search-tool/fjjkihnjlinkjpfeooipegebcakeocef'>Click here.</a> 😊"}
+    "comment": {"message": "If you like it, please give a comment, thanks! <a href='https://chrome.google.com/webstore/detail/search-tool/fjjkihnjlinkjpfeooipegebcakeocef'>Click here.</a> 😊"},
+    "readme": {"message": "The default one-click switch search shortcut is (win)Alt+S (mac)Ctrl+S. <br/>It is recommended to configure activate extension shortcuts, open chrome://extensions/shortcuts, such as Ctrl/Cmd+L, to open the search bar more quickly. 😉"}
 }

@@ -42,6 +42,7 @@ export default {
             selectId: 0,
             tabIndex: -1,
             first: false,
+            searchInNewTab: true,
         };
     },
 
@@ -50,7 +51,8 @@ export default {
             let defaultConfig = {
                 'engines': chrome.i18n.getMessage('defaultEnginesConfig'),
                 'first': true,
-                'selectId': 0
+                'selectId': 0,
+                'searchInNewTab': true,
             }; // 默认配置
             // 读取数据，第一个参数是指定要读取的key以及设置默认值
             let that = this;
@@ -66,6 +68,7 @@ export default {
                 });
                 that.first = items.first;
                 that.selectId = items.selectId;
+                that.searchInNewTab = items.searchInNewTab;
                 console.log(that.engines);
                 console.log(that.first);
                 console.log("get with selectId " + that.selectId);
@@ -95,6 +98,9 @@ export default {
             chrome.storage.sync.set({
                 selectId: this.selectId
             });
+            if (this.searchInNewTab) {
+                shift = !shift;
+            }
             this.query = this.query.trim();
             if (this.query && !shift) {
                 chrome.tabs.update({
@@ -168,6 +174,7 @@ export default {
 function parseUrl(url) {
     let obj = {}
     let reg = /([^?=&]+)=([^?=&]+)/g
+    url = url.replace(/#.*/, '');
     url.replace(reg, function () {
         obj[arguments[1]] = arguments[2]
     })

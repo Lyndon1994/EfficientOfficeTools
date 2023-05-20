@@ -31,6 +31,7 @@ npm run build:crx
 # 打包zip:
 npm run build:zip
 # 访问上传： https://chrome.google.com/webstore/devconsole/ea79ae7b-aa25-4185-92f4-8418c3113612/fjjkihnjlinkjpfeooipegebcakeocef/edit/package
+# Edge: https://partner.microsoft.com/en-us/dashboard/microsoftedge/cb67edc7-1dfc-46fd-be12-3866913f24f0/packages/dashboard
 ```
 
 ### Customize configuration
