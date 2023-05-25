@@ -256,11 +256,20 @@ export default {
         },
         openReadme() {
             this.$notify({
-                title: 'Hi',
+                title: 'Read Me',
                 dangerouslyUseHTMLString: true,
                 message: this.getMessage('readme'),
                 duration: 0
             });
+            let that = this;
+            setTimeout(function(){ 
+                that.$notify({
+                    title: 'Welcome to contribute',
+                    dangerouslyUseHTMLString: true,
+                    message: "You are more than welcome to contribute code to improve the tool. <a href='https://github.com/Lyndon1994/EfficientOfficeTools/tree/main/chrome/SearchTool'>Click here.</a> 😊",
+                    duration: 0
+                });
+            }, 3000);
         }
     },
 

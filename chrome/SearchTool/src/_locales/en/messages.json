@@ -39,9 +39,10 @@
     "searchInNewTabTip": {"message": "Open a new tab to search."},
     "searchInNewTab": {"message": "Search in a new window"},
     "themeColorTip": {"message": "Theme color"},
+    "historyDaysTip": {"message": "Search history from how many days ago."},
     "copy": {"message": "Copy"},
     "open": {"message": "Open"},
     "refresh": {"message": "It takes effect after the page is refreshed."},
     "comment": {"message": "If you like it, please give a comment, thanks! <a href='https://chrome.google.com/webstore/detail/search-tool/fjjkihnjlinkjpfeooipegebcakeocef'>Click here.</a> 😊"},
-    "readme": {"message": "The default one-click switch search shortcut is (win)Alt+S (mac)Ctrl+S. <br/>It is recommended to configure activate extension shortcuts, open chrome://extensions/shortcuts, such as Ctrl/Cmd+L, to open the search bar more quickly. 😉"}
+    "readme": {"message": "The default one-click switch search shortcut is (win)Alt+S (mac)Ctrl+S. <br/> But sometimes it will set failed, please set it by yourself, open chrome://extensions/shortcuts.<br/>It is recommended to configure activate extension shortcuts, open chrome://extensions/shortcuts, such as Ctrl/Cmd+K, to open the search bar more quickly. 😉"}
 }

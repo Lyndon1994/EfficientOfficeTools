@@ -39,9 +39,10 @@
     "searchInNewTabTip": {"message": "在新窗口打开搜索页面"},
     "searchInNewTab": {"message": "在新窗口搜索"},
     "themeColorTip": {"message": "主题颜色"},
+    "historyDaysTip": {"message": "搜索多少天之前的历史记录"},
     "copy": {"message": "复制"},
     "open": {"message": "打开"},
     "refresh": {"message": "刷新页面后生效"},
     "comment": {"message": "如果你觉得还挺好用的，或者有些建议，帮忙给个评论吧，谢谢！ <a href='https://chrome.google.com/webstore/detail/search-tool/fjjkihnjlinkjpfeooipegebcakeocef'>快戳这里</a>😊"},
-    "readme": {"message": "默认一键切换搜索快捷键是(win)Alt+S (mac)Ctrl+S, 建议配置激活扩展快捷键，访问chrome://extensions/shortcuts，如Ctrl/Cmd+L，更快捷的打开搜索栏 😉"}
+    "readme": {"message": "默认一键切换搜索快捷键是(win)Alt+S (mac)Ctrl+S, 建议配置激活扩展快捷键，访问chrome://extensions/shortcuts，如Ctrl/Cmd+K，更快捷的打开搜索栏 😉"}
 }
