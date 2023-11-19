@@ -5,6 +5,7 @@
 - YoudaoTranslate
 - Tools for encoding/decoding, time, incremental conversion
 - Terminal
+- Search Xmind
 
 ## Chrome Extension
 
