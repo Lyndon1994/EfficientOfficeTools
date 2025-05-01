@@ -113,7 +113,6 @@ function createTooltip(e) {
 
   var copyTip = chrome.i18n.getMessage("copy");
   if (!addonConfig.select2clipboard) {
-    // 选择合适的 emoji（emoji 本身适配深浅色背景）
     let copyIconEmoji = "📋";
     copyBtn = `<div class="addon_xlj_copy_toobar addon_xlj_button" style="font-size:20px;line-height:22px;cursor:pointer;color:${addonConfig.textColor};" title="${copyTip}" onclick="navigator.clipboard.writeText('${selectTxt}')">
         ${copyIconEmoji}

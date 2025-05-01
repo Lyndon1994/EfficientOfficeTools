@@ -8,7 +8,7 @@
                 class="inline-input"
                 v-model="query"
                 @focus="handleFocus"
-                :fetch-suggestions="(popupSuggestEnabled || popupHistoryEnabled) ? querySearch : null"
+                :fetch-suggestions="querySearch"
                 placeholder="Search ..."
                 :trigger-on-focus="false"
                 :popper-append-to-body="false"
@@ -34,7 +34,7 @@
             <div class="engine-options-area" :class="{'full-width': !showHistoryDaysTooltip}">
                 <el-tag v-for="item in engines" :key="item.id" :type="item.id - 1 == selectId ? 'success' : 'info'"
                     :hit="item.id - 1 == selectId" :color="item.id - 1 == selectId ? '' : 'Transparent'" @click="search(item)"
-                    @mouseenter="selectSearch(item)" style="margin-right: 4px; margin-bottom: 4px;">
+                    @mouseenter="selectSearch(item)" style="margin-right: 4px; margin-bottom: 10px;">
                     <img v-if="item.icon" style="width: 30px; height: 30px;" :src="item.icon" />
                     <span v-if="!item.icon">{{ item.name }}</span>
                 </el-tag>
@@ -273,15 +273,21 @@ export default {
             }
         },
         querySearch(queryString, cb) {
-            this.suggestionsVisible = true;
-            this.queryMatch(queryString, (results) => {
-                if (results && results.length > 0) {
-                    this.suggestionBoxHeight = Math.min(300, results.length * 34);
-                } else {
-                    this.suggestionBoxHeight = 0;
-                }
-                cb(results);
-            });
+            if (this.popupSuggestEnabled || this.popupHistoryEnabled) {
+                this.suggestionsVisible = true;
+                this.queryMatch(queryString, (results) => {
+                    if (results && results.length > 0) {
+                        this.suggestionBoxHeight = Math.min(300, results.length * 34);
+                    } else {
+                        this.suggestionBoxHeight = 0;
+                    }
+                    cb(results);
+                });
+            } else {
+                this.suggestionsVisible = false;
+                console.log("no suggestion");
+                cb([]);
+            }
         },
         queryMatch(queryString, cb) {
             let that = this;
@@ -548,6 +554,10 @@ function parseUrl(url) {
 /* 让 el-autocomplete 的下拉建议面板 z-index 更低，避免遮挡 engine 图标 */
 .el-autocomplete-suggestion {
   z-index: 50 !important;
+}
+
+.el-tag {
+    border-color: #d9ecff;
 }
 
 .engine-row-fixed-bottom {
