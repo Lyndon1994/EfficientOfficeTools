@@ -5,11 +5,11 @@
     size="mini"
     style="width: 100%; min-width: 1000px; min-height: 500px"
   >
-    <draggable 
-      v-model:list="engines" 
-      @end="onDragEnd" 
-      handle=".handle" 
-      item-key="id" 
+    <draggable
+      v-model:list="engines"
+      @end="onDragEnd"
+      handle=".handle"
+      item-key="id"
       class="list-group"
     >
       <template #item="{ element }">
@@ -104,22 +104,28 @@
                 </template>
               </el-input>
             </el-col>
-            <el-col :xs="6" :sm="2" :md="2" style="min-width: 40px;">
+            <el-col :xs="6" :sm="2" :md="2" style="min-width: 40px">
               <el-button
                 type="danger"
                 @click="delItem(element.id)"
                 circle
-                style="margin-left: 4px;"
+                style="margin-left: 4px"
               >
                 <el-icon><Delete /></el-icon>
               </el-button>
             </el-col>
-            <el-col :xs="6" :sm="2" :md="2" v-if="element.id == engines.length" style="min-width: 40px;">
+            <el-col
+              :xs="6"
+              :sm="2"
+              :md="2"
+              v-if="element.id == engines.length"
+              style="min-width: 40px"
+            >
               <el-button
                 type="info"
                 @click="addItem"
                 circle
-                style="margin-left: 4px;"
+                style="margin-left: 4px"
               >
                 <el-icon><Plus /></el-icon>
               </el-button>
@@ -202,11 +208,13 @@
         :content="getMessage('popupSuggestEngineTip')"
         placement="top"
       >
-        <el-select v-model="settings.popupSuggestEngine" style="width: 120px;">
+        <el-select v-model="settings.popupSuggestEngine" style="width: 120px">
           <el-option label="Bing" value="bing"></el-option>
           <el-option label="Google" value="google"></el-option>
         </el-select>
-        <span style="margin-left: 8px;">{{ getMessage('popupSuggestEngine') }}</span>
+        <span style="margin-left: 8px">{{
+          getMessage("popupSuggestEngine")
+        }}</span>
       </el-tooltip>
     </el-form-item>
     <el-form-item label="">
@@ -234,9 +242,11 @@
           :min="1"
           :max="365"
           :step="1"
-          style="width: 120px;"
+          style="width: 120px"
         ></el-input-number>
-        <span style="margin-left: 8px;">{{ getMessage('popupHistoryDays') }}</span>
+        <span style="margin-left: 8px">{{
+          getMessage("popupHistoryDays")
+        }}</span>
       </el-tooltip>
     </el-form-item>
 
@@ -281,9 +291,9 @@
 
 <script>
 var debounce = require("lodash.debounce");
-import { defineComponent } from 'vue';
+import { defineComponent } from "vue";
 import draggable from "vuedraggable";
-import { Delete, Plus, Rank } from '@element-plus/icons-vue';
+import { Delete, Plus, Rank } from "@element-plus/icons-vue";
 
 /* eslint-disable */
 export default defineComponent({
