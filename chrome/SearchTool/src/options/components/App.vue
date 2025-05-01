@@ -23,7 +23,7 @@
             <el-col :xs="2" :sm="1">
               <el-icon class="handle"><Rank /></el-icon>
             </el-col>
-            <el-col :xs="8" :sm="4" :md="2">
+            <el-col :xs="12" :sm="6" :md="3">
               <el-input
                 :placeholder="getMessage('searchEngine')"
                 v-model="element.name"
@@ -31,7 +31,7 @@
               >
               </el-input>
             </el-col>
-            <el-col :xs="12" :sm="6" :md="3">
+            <el-col :xs="12" :sm="6" :md="4">
               <el-tooltip
                 class="item"
                 effect="dark"
@@ -44,7 +44,7 @@
                 ></el-switch>
               </el-tooltip>
             </el-col>
-            <el-col :xs="12" :sm="6" :md="3">
+            <el-col :xs="12" :sm="6" :md="4">
               <el-tooltip
                 class="item"
                 effect="dark"
@@ -85,28 +85,26 @@
             </el-col>
           </el-row>
           <el-row :gutter="16" class="engine-row">
-            <el-col :xs="24" :sm="12" :md="9">
+            <el-col :xs="24" :sm="12" :md="14">
               <el-input
                 :placeholder="getMessage('searchUrl')"
                 v-model="element.url"
                 @input="changeSearchUrl(element)"
                 class="engine-url"
-                style="min-width: 180px;"
               ></el-input>
             </el-col>
-            <el-col :xs="18" :sm="9" :md="8">
+            <el-col :xs="24" :sm="8" :md="8">
               <el-input
                 :placeholder="getMessage('searchIcon')"
                 v-model="element.icon"
                 class="engine-icon"
-                style="min-width: 120px;"
               >
                 <template v-slot:append>
                   <img :src="element.icon" alt="" height="20px" />
                 </template>
               </el-input>
             </el-col>
-            <el-col :xs="3" :sm="1" :md="1" style="min-width: 40px;">
+            <el-col :xs="6" :sm="2" :md="2" style="min-width: 40px;">
               <el-button
                 type="danger"
                 @click="delItem(element.id)"
@@ -116,7 +114,7 @@
                 <el-icon><Delete /></el-icon>
               </el-button>
             </el-col>
-            <el-col :xs="3" :sm="1" :md="1" v-if="element.id == engines.length" style="min-width: 40px;">
+            <el-col :xs="6" :sm="2" :md="2" v-if="element.id == engines.length" style="min-width: 40px;">
               <el-button
                 type="info"
                 @click="addItem"
@@ -265,7 +263,7 @@
       <el-button type="danger" @click="reset">{{
         getMessage("reset")
       }}</el-button>
-      <el-button type="primary" @click="exportConfig">{{
+      <el-button type="default" @click="exportConfig">{{
         getMessage("export") || "导出"
       }}</el-button>
       <el-upload
@@ -273,7 +271,7 @@
         accept=".json"
         :before-upload="importConfig"
       >
-        <el-button type="success">{{
+        <el-button type="default">{{
           getMessage("import") || "导入"
         }}</el-button>
       </el-upload>
@@ -563,6 +561,13 @@ export default defineComponent({
 
 .engine-row {
   margin-bottom: 10px;
+  display: flex;       /* 改为弹性布局 */
+  flex-wrap: wrap;     /* 自动换行 */
+}
+.engine-row > .el-col {
+  padding-left: 20px;    /* 增加左右内边距 */
+  padding-right: 20px;
+  margin-bottom: 12px;   /* 增加底部间距 */
 }
 
 .engine-input {
@@ -573,23 +578,30 @@ export default defineComponent({
 
 .engine-url {
   width: 100%;
-  min-width: 180px;
+  min-width: 280px;      /* 缩小最小宽度 */
+  max-width: 500px;      /* 合理最大宽度 */
 }
 
 .engine-icon {
   width: 100%;
-  min-width: 120px;
+  min-width: 180px;      /* 缩小最小宽度 */
+  max-width: 300px;      /* 合理最大宽度 */
 }
 
-@media (max-width: 600px) {
+@media (max-width: 1000px) {
   .engine-row {
     flex-wrap: wrap;
   }
-  .engine-url, .engine-icon {
-    min-width: 100px;
+  .engine-url {
+    min-width: 350px;
+    max-width: 100%;
+  }
+  .engine-icon {
+    min-width: 250px;
+    max-width: 100%;
   }
   .el-col {
-    margin-bottom: 8px;
+    margin-bottom: 12px; /* 增加响应式模式下的间距 */
   }
 }
 
