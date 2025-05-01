@@ -39,6 +39,8 @@
     "searchInNewTabTip": {"message": "在新窗口打开搜索页面"},
     "searchInNewTab": {"message": "在新窗口搜索"},
     "themeColorTip": {"message": "主题颜色"},
+    "textColorTip": {"message": "文字颜色"},
+    "textColor": {"message": "文字颜色"},
     "historyDaysTip": {"message": "搜索多少天之前的历史记录"},
     "copy": {"message": "复制"},
     "open": {"message": "打开"},

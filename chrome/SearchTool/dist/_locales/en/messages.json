@@ -39,6 +39,8 @@
     "searchInNewTabTip": {"message": "Open a new tab to search."},
     "searchInNewTab": {"message": "Search in a new window"},
     "themeColorTip": {"message": "Theme color"},
+    "textColorTip": {"message": "Text color"},
+    "textColor": {"message": "Text color"},
     "historyDaysTip": {"message": "Search history from how many days ago."},
     "copy": {"message": "Copy"},
     "open": {"message": "Open"},

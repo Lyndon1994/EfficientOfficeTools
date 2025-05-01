@@ -251,6 +251,15 @@
       >
       </el-color-picker>
     </el-form-item>
+    <el-form-item label="">
+      {{ getMessage("textColorTip") }}:
+      <el-color-picker
+        v-model="settings.textColor"
+        show-alpha
+        :predefine="predefineColors"
+      >
+      </el-color-picker>
+    </el-form-item>
 
     <el-form-item>
       <el-button type="danger" @click="reset">{{
@@ -300,6 +309,7 @@ export default defineComponent({
                 showTopSearchSwitch: true,
                 searchInNewTab: true,
                 themeColor: 'rgba(144, 238, 144, 0.56)',
+                textColor: '#202124', // 新增
                 popupSuggestEnabled: true,
                 popupSuggestEngine: 'bing',
                 popupHistoryEnabled: true,
@@ -334,6 +344,7 @@ export default defineComponent({
                 showTopSearchSwitch: true,
                 searchInNewTab: true,
                 themeColor: 'rgba(144, 238, 144, 0.56)',
+                textColor: '#202124', // 新增
                 popupSuggestEnabled: true,
                 popupSuggestEngine: 'bing',
                 popupHistoryEnabled: true,
@@ -348,6 +359,7 @@ export default defineComponent({
                 that.settings.showTopSearchSwitch = items.showTopSearchSwitch;
                 that.settings.searchInNewTab = items.searchInNewTab;
                 that.settings.themeColor = items.themeColor;
+                that.settings.textColor = items.textColor; // 新增
                 that.settings.popupSuggestEnabled = items.popupSuggestEnabled;
                 that.settings.popupSuggestEngine = items.popupSuggestEngine;
                 that.settings.popupHistoryEnabled = items.popupHistoryEnabled;
@@ -403,6 +415,7 @@ export default defineComponent({
                 showTopSearchSwitch: this.settings.showTopSearchSwitch,
                 searchInNewTab: this.settings.searchInNewTab,
                 themeColor: this.settings.themeColor,
+                textColor: this.settings.textColor, // 新增
                 popupSuggestEnabled: this.settings.popupSuggestEnabled,
                 popupSuggestEngine: this.settings.popupSuggestEngine,
                 popupHistoryEnabled: this.settings.popupHistoryEnabled,
@@ -460,6 +473,10 @@ export default defineComponent({
                     if (data.engines && data.settings) {
                         this.engines = data.engines;
                         this.settings = Object.assign(this.settings, data.settings);
+                        // 兼容旧配置
+                        if (!this.settings.textColor) {
+                            this.settings.textColor = '#202124';
+                        }
                         this.onSubmit();
                         this.$message.success(this.getMessage('importSuccess') || '导入成功');
                     } else {

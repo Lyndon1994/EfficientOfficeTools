@@ -28,6 +28,7 @@ chrome.storage.sync.get(addonConfig, function (items) {
   addonConfig.showTopSearchSwitch = items.showTopSearchSwitch;
   addonConfig.searchInNewTab = items.searchInNewTab;
   addonConfig.themeColor = items.themeColor;
+  addonConfig.textColor = items.textColor || "#202124";
 
   // 展示顶部切换菜单
   if (addonConfig.showTopSearchSwitch) {
@@ -97,7 +98,7 @@ function copySelectTxt() {
 function createTooltip(e) {
   var x = e.pageX;
   var y = e.pageY;
-  var tooltip = `<div id="strong_search_menu_id" class="addon_xlj_toobar"style="position: absolute; left: {x}px; top: {y}px; z-index: 100000000;background-color: ${addonConfig.themeColor}">`;
+  var tooltip = `<div id="strong_search_menu_id" class="addon_xlj_toobar" style="position: absolute; left: {x}px; top: {y}px; z-index: 100000000; background-color: ${addonConfig.themeColor}; color: ${addonConfig.textColor};">`;
 
   var reg = /(\w+[^\s]+(\.[^\s]+){1,})/;
   var ret = reg.exec(selectTxt);
@@ -114,7 +115,7 @@ function createTooltip(e) {
   if (!addonConfig.select2clipboard) {
     // 选择合适的 emoji（emoji 本身适配深浅色背景）
     let copyIconEmoji = "📋";
-    copyBtn = `<div class="addon_xlj_copy_toobar addon_xlj_button" style="font-size:20px;line-height:22px;cursor:pointer;" title="${copyTip}" onclick="navigator.clipboard.writeText('${selectTxt}')">
+    copyBtn = `<div class="addon_xlj_copy_toobar addon_xlj_button" style="font-size:20px;line-height:22px;cursor:pointer;color:${addonConfig.textColor};" title="${copyTip}" onclick="navigator.clipboard.writeText('${selectTxt}')">
         ${copyIconEmoji}
       </div>`;
     tooltip = tooltip + copyBtn;
@@ -126,14 +127,14 @@ function createTooltip(e) {
     if (engine.name && engine.url && engine.inTooltip) {
       inTooltipCount += 1;
       var url = engine.url.replace("%s", encodeURIComponent(selectTxt));
-      if (addonConfig.themeStyle == "text") {
+      if (addonConfig.themeStyle == "text" || !engine.icon) {
         searchContent += `<div class="addon_xlj_search_parts_engine addon_xlj_link_color" data-url="${url}" title="${engine.name}"><a style="color:${addonConfig.textColor};" target="${addonConfig.searchInNewTab ? "_blank" : "_self"}" href="${url}">${engine.name}</a></div>`;
       } else {
         var icon = chrome.runtime.getURL(engine.icon);
         if (engine.icon.indexOf("http") !== -1) {
           icon = engine.icon;
         }
-        searchContent += `<a class="addon_xlj_search_parts_engine style="color:beige;" target="${addonConfig.searchInNewTab ? "_blank" : "_self"}" href="${url}"><img style="width: 22px; height: 22px;" src="${icon}" alt="${engine.name}"></a>`;
+        searchContent += `<a class="addon_xlj_search_parts_engine" style="color:${addonConfig.textColor};" target="${addonConfig.searchInNewTab ? "_blank" : "_self"}" href="${url}"><img style="width: 22px; height: 22px;" src="${icon}" alt="${engine.name}"></a>`;
       }
     }
   });
@@ -169,7 +170,7 @@ document.addEventListener("mouseup", function (event) {
 
 function createTopTooltip() {
   console.log("createTopTooltip");
-  var pinTooltip = `<div id="strong_search_menu_id" class="addon_xlj_toobar" style="position: fixed; left: 60%; top: 0px; z-index: 100000000;background-color: ${addonConfig.themeColor}">`;
+  var pinTooltip = `<div id="strong_search_menu_id" class="addon_xlj_toobar" style="position: fixed; left: 60%; top: 0px; z-index: 100000000; background-color: ${addonConfig.themeColor}; color: ${addonConfig.textColor};">`;
   var inTooltipCount = 0;
   var searchContent = '<div class="addon_xlj_button">';
   if (addonConfig.themeColor != "black") {
@@ -191,15 +192,14 @@ function createTopTooltip() {
     if (engine.name && engine.url && engine.inPopup) {
       inTooltipCount += 1;
       var url = engine.url.replace("%s", query);
-      // searchContent += `<div class="addon_xlj_search_parts_engine addon_xlj_link_color" data-url="${url}" title="${engine.name}" onclick="window.open('${url}')">${engine.name}</div>`;
-      if (addonConfig.themeStyle == "text") {
+      if (addonConfig.themeStyle == "text" || !engine.icon) {
         searchContent += `<div class="addon_xlj_search_parts_engine addon_xlj_link_color" data-url="${url}" title="${engine.name}"><a style="color:${addonConfig.textColor};" target="${addonConfig.searchInNewTab ? "_blank" : "_self"}" href="${url}">${engine.name}</a></div>`;
       } else {
         var icon = chrome.runtime.getURL(engine.icon);
         if (engine.icon.indexOf("http") !== -1) {
           icon = engine.icon;
         }
-        searchContent += `<a class="addon_xlj_search_parts_engine style="color:beige;" target="${addonConfig.searchInNewTab ? "_blank" : "_self"}" href="${url}"><img style="width: 22px; height: 22px;" src="${icon}" alt="${engine.name}"></a>`;
+        searchContent += `<a class="addon_xlj_search_parts_engine" style="color:${addonConfig.textColor};" target="${addonConfig.searchInNewTab ? "_blank" : "_self"}" href="${url}"><img style="width: 22px; height: 22px;" src="${icon}" alt="${engine.name}"></a>`;
       }
     }
   });
@@ -209,10 +209,10 @@ function createTopTooltip() {
   }
   pinTooltip += searchContent;
   if (addonConfig.themeColor != "black") {
-    pinTooltip += `<div class="addon_xlj_copy_toobar addon_xlj_button"title="close" onclick="document.getElementById('addon_toptooltip').remove()">
+    pinTooltip += `<div class="addon_xlj_copy_toobar addon_xlj_button" title="close" style="color:${addonConfig.textColor};" onclick="document.getElementById('addon_toptooltip').remove()">
         <div class="addon_xlj_func">X</div></div>`;
   } else {
-    pinTooltip += `<div class="addon_xlj_copy_toobar addon_xlj_button"title="close" onclick="document.getElementById('addon_toptooltip').remove()">
+    pinTooltip += `<div class="addon_xlj_copy_toobar addon_xlj_button" title="close" style="color:${addonConfig.textColor};" onclick="document.getElementById('addon_toptooltip').remove()">
         <div class="addon_xlj_func addon_xlj_link_color">X</div></div>`;
   }
 

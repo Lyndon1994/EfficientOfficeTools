@@ -1,15 +1,14 @@
 <!-- eslint-disable prettier/prettier -->
 <template>
-    <el-form :style="tableheight" ref="form" label-width="10px" size="mini" @submit.prevent>
+    <el-form :style="tableheightWithPadding" ref="form" label-width="10px" size="mini" @submit.prevent>
         <el-row style="width: inherit;">
             <el-autocomplete
-                size="small"
                 ref="queryInput"
                 style="width: inherit;"
                 class="inline-input"
                 v-model="query"
                 @focus="handleFocus"
-                :fetch-suggestions="(popupSuggestEnabled || popupHistoryEnabled) ? queryMatch : null"
+                :fetch-suggestions="(popupSuggestEnabled || popupHistoryEnabled) ? querySearch : null"
                 placeholder="Search ..."
                 :trigger-on-focus="false"
                 :popper-append-to-body="false"
@@ -17,26 +16,37 @@
                 @select="handleSelect"
                 @keyup.enter="onSubmit"
                 @blur="handleBlur"
+                @input="handleQueryInput"
             >
                 <template v-slot="{ item }">
                     <span v-html="item.value"></span>
                 </template>
             </el-autocomplete>
         </el-row>
-        <el-row :style="{ width: 'inherit', marginTop: '10px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', position: 'relative', zIndex: 100 }">
-            <el-tag v-for="item in engines" :key="item.id" :type="item.id - 1 == selectId ? 'success' : 'info'"
-                :hit="item.id - 1 == selectId" :color="item.id - 1 == selectId ? '' : 'Transparent'" @click="search(item)"
-                @mouseenter="selectSearch(item)" style="margin-right: 4px; margin-bottom: 4px;">
-                <img v-if="item.icon" style="width: 30px; height: 30px;" :src="item.icon" />
-                <span v-if="!item.icon">{{ item.name }}</span>
-            </el-tag>
-            <span v-if="showHistoryDaysTooltip">
+        
+        <!-- 修改为两列布局 -->
+        <el-row
+            ref="engineRow"
+            :style="computedEngineRowStyle"
+            :class="{'engine-row-fixed-bottom': enginesFixedBottom}"
+        >
+            <!-- 左侧搜索引擎区域 -->
+            <div class="engine-options-area" :class="{'full-width': !showHistoryDaysTooltip}">
+                <el-tag v-for="item in engines" :key="item.id" :type="item.id - 1 == selectId ? 'success' : 'info'"
+                    :hit="item.id - 1 == selectId" :color="item.id - 1 == selectId ? '' : 'Transparent'" @click="search(item)"
+                    @mouseenter="selectSearch(item)" style="margin-right: 4px; margin-bottom: 4px;">
+                    <img v-if="item.icon" style="width: 30px; height: 30px;" :src="item.icon" />
+                    <span v-if="!item.icon">{{ item.name }}</span>
+                </el-tag>
+            </div>
+            
+            <!-- 右侧历史天数区域 -->
+            <div v-if="showHistoryDaysTooltip" class="history-days-area">
                 <el-tooltip class="item" effect="light" :disabled="disabledHistoryTooltip"
                     :content="getMessage('historyDaysTip')" placement="top">
-                    <el-slider :input-size="mini" style="position: absolute; right: 30px; width: 100px; top: 0px;"
-                        v-model="historyDays" :max="365" @change="onChangeHistoryDays"></el-slider>
+                    <el-slider :input-size="mini" v-model="historyDays" :max="365" @change="onChangeHistoryDays"></el-slider>
                 </el-tooltip>
-            </span>
+            </div>
 
             <i class="el-icon-setting" @click="setting()"
                 style="cursor: pointer; position: absolute; top: 15px; right: 1px; opacity: 0.2;"></i>
@@ -81,6 +91,10 @@ export default {
             popupSuggestEngine: 'bing',
             popupHistoryEnabled: true,
             popupHistoryDays: 90,
+            enginesFixedBottom: false,
+            engineRowLines: 1,
+            suggestionsVisible: false,
+            suggestionBoxHeight: 0,
         };
     },
 
@@ -95,8 +109,7 @@ export default {
                 'popupSuggestEngine': 'bing',
                 'popupHistoryEnabled': true,
                 'popupHistoryDays': 90,
-            }; // 默认配置
-            // 读取数据，第一个参数是指定要读取的key以及设置默认值
+            };
             let that = this;
             chrome.storage.sync.get(defaultConfig, function (items) {
                 that.engines = JSON.parse(items.engines);
@@ -132,10 +145,8 @@ export default {
                 that.query = decodeURI(that.query);
                 that.tabIndex = tab.index;
             });
-            // 聚焦搜索框
             this.$nextTick(() => {
                 this.$refs['queryInput'].focus();
-                // this.$refs['queryInput'].setSelectionRange(0, 10);
             });
         },
         getMessage(key) {
@@ -175,20 +186,7 @@ export default {
             this.selectId = (this.selectId + 1) % this.engines.length;
         },
         onKeyDown(e) {
-            // enter + shift
-            // if (e.shiftKey && e.keyCode == 13) {
-            //     e.preventDefault();
-            //     this.searchFirst(true);
-            //     return false;
-            // }
-            // if (e.keyCode == 13) {
-            //     e.preventDefault();
-            //     this.searchFirst();
-            //     return false;
-            // }
-            // tab
             if (e.keyCode == 9) {
-                // 让input后选项somehow就出不来
                 if (document.getElementsByClassName("el-autocomplete-suggestion")) {
                     document.getElementsByClassName("el-autocomplete-suggestion")[0].style.display = "block";
                 }
@@ -198,7 +196,6 @@ export default {
             }
             return false;
         },
-        // Options page button
         setting() {
             var url = chrome.runtime.getURL('options.html');
             chrome.tabs.create({
@@ -226,10 +223,8 @@ export default {
             try {
                 this.$axios.get(`https://suggestqueries.google.com/complete/search?client=youtube&q=${queryString}&jsonp=window.google.ac.h`).then(function (res) {
                     if (res.status == 200) {
-                        // Google 返回格式: [query, [[suggest1, ...], [suggest2, ...], ...], {...}]
                         let data = JSON.parse(res.data.replace(/window.google.ac.h\((.*)\)/, "$1"));
                         let results = Array.isArray(data[1]) ? data[1].map(i => ({ value: i[0] })) : [];
-                        // 置顶 pin 或高频历史
                         const topQ = that.queryMatchHistory.filter(item => item.pin).concat(that.queryMatchHistory.filter(obj => obj.visitCount && obj.visitCount >= 3)).slice(0, 1);
                         const topQUrls = topQ.map(item => item.url);
                         if (topQ.length > 0) {
@@ -253,25 +248,20 @@ export default {
             this.highlightFirstItem = false;
             try {
                 this.$axios.get(`https://api.bing.com/qsonhs.aspx?type=cb&q=${queryString}&cb=window.bing.sug`).then(function (res) {
-                    // console.log("bing res.body:");
-                    // console.log(res);
                     if (res.status == 200) {
                         let data = JSON.parse(res.data.replace(/.*window.bing.sug\((.*)\/\* pageview_candidate \*\/\)\;/, "$1"));
                         if (data['AS']['FullResults'] <= 0) {
                             return;
                         }
                         let results = data.AS.Results.flatMap(result => result.Suggests.map(suggest => ({ value: suggest.Txt })));
-                        // 调整排序放在最前面
                         const topQ = that.queryMatchHistory.filter(item => item.pin).concat(that.queryMatchHistory.filter((obj) => obj.visitCount && obj.visitCount >= 3)).slice(0, 1);
                         const topQUrls = topQ.map(item => item.url);
                         if (topQ) {
-                            // TODO somehow 没起作用
                             that.highlightFirstItem = true;
                         }
                         const lastQ = that.queryMatchHistory.filter((obj) => !topQUrls.includes(obj.url));
                         results = topQ.concat(results.slice(0, 5)).concat(lastQ).concat(results.slice(5))
                         that.tableheight.height = that.getHeight(results.length) + 'px';
-                        // console.log(results);
                         cb(results);
                     }
                 }, function () {
@@ -282,41 +272,53 @@ export default {
                 console.log(err);
             }
         },
+        querySearch(queryString, cb) {
+            this.suggestionsVisible = true;
+            this.queryMatch(queryString, (results) => {
+                if (results && results.length > 0) {
+                    this.suggestionBoxHeight = Math.min(300, results.length * 34);
+                } else {
+                    this.suggestionBoxHeight = 0;
+                }
+                cb(results);
+            });
+        },
         queryMatch(queryString, cb) {
-            // 控制建议和历史/收藏夹匹配
             let that = this;
             let bookmarks = [];
             this.queryMatchHistory = [];
             console.log("query match start: " + queryString + " history days: " + this.historyDays);
 
-            // 搜索建议
             if (this.popupSuggestEnabled) {
                 this.tableheight.width = largeWidth;
+                this.enginesFixedBottom = true;
                 if (this.popupSuggestEngine === 'bing') {
                     this.bingSuggest(queryString, cb);
                 } else if (this.popupSuggestEngine === 'google') {
                     this.googleSuggest(queryString, cb);
                 }
+            } else {
+                this.enginesFixedBottom = false;
             }
 
-            // 历史/收藏夹匹配
             if (!this.popupHistoryEnabled) {
+                this.enginesFixedBottom = false;
                 return;
             }
             this.tableheight.width = largeWidth;
+            this.enginesFixedBottom = true;
             this.showHistoryDaysTooltip = true;
 
             chrome.bookmarks.search(queryString, function (results) {
                 bookmarks = results.filter((obj) => obj['url'] != null).slice(0, 10);
             })
-            // TODO: 过滤减号后面的字符
             let queryFormats = queryString.match(/^[^-]+/);
             let filterStrs = queryString.match(/(?<=-)\w+/g);
             queryString = queryFormats ? queryFormats[0] : queryString;
             chrome.history.search({
                 "text": queryString,
                 "maxResults": 30,
-                "startTime": new Date().getTime() - that.historyDays * 86400000 // 90 day ago
+                "startTime": new Date().getTime() - that.historyDays * 86400000
             },
                 function (results) {
                     console.log("bookmarks");
@@ -327,11 +329,9 @@ export default {
                     results.forEach(element => {
                         let url = element['url'].replace(/^https?:\/\/(www\.)?/, "");
                         element['value'] = `${element['title']} - <span style="color:blue;">${url}</span>`;
-                        // 收藏夹前面加五角星
                         if (element.dateAdded) {
                             element['value'] = `⭐️${element['value']}`;
                         }
-                        // 空格分割再加粗
                         queryString.split(/[\s\+]+/).forEach(iq => {
                             iq = iq.trim();
                             if (iq) {
@@ -339,17 +339,13 @@ export default {
                             }
                         });
                         let domain = new URL(element['url']).hostname;
-                        // 如果query和url完全匹配，则置顶，只匹配history
                         if (element.visitCount && domain.indexOf(queryString)===0) {
                             element['pin'] = true;
                         }
-                        // 用这个service获取icon
                         if (element['url'].indexOf("http") != -1) {
-                            //element['value'] = `<img src="https://www.google.com/s2/favicons?domain=${element['url']}" style="width: 18px; vertical-align: middle;"> ${element['value']}`
                             element['value'] = `<img src="https://icon.horse/icon/${domain}" style="width: 18px; vertical-align: middle;"> ${element['value']}`
                         }
                     });
-                    // 过滤减号后面的字符
                     if (filterStrs && filterStrs.length > 0) {
                         filterStrs.forEach(filterStr => {
                             filterStr = filterStr.trim().toLowerCase();
@@ -391,11 +387,37 @@ export default {
             console.log("focus")
             event.target.select();
         },
+        handleQueryInput() {
+            this.$nextTick(() => {
+                const suggestionEl = document.querySelector('.el-autocomplete-suggestion');
+                if (suggestionEl) {
+                    this.suggestionsVisible = suggestionEl.style.display !== 'none';
+                    this.updateEngineRowLines();
+                }
+            });
+        },
         onChangeHistoryDays() {
             this.disabledHistoryTooltip=true;
             if (document.getElementsByClassName("el-autocomplete-suggestion")) {
                 document.getElementsByClassName("el-autocomplete-suggestion")[0].style.display = "block";
             }
+        },
+        updateEngineRowLines() {
+            this.$nextTick(() => {
+                const row = this.$refs.engineRow;
+                if (row) {
+                    const rowHeight = row.offsetHeight || 1;
+                    const lineHeight = 38;
+                    this.engineRowLines = Math.max(1, Math.round(rowHeight / lineHeight));
+                    
+                    if (this.suggestionsVisible && this.enginesFixedBottom) {
+                        const suggestionEl = document.querySelector('.el-autocomplete-suggestion');
+                        if (suggestionEl) {
+                            this.suggestionBoxHeight = suggestionEl.offsetHeight || 0;
+                        }
+                    }
+                }
+            });
         }
     },
 
@@ -406,16 +428,109 @@ export default {
     beforeDestroy() {
         window.removeEventListener('keydown', this.onKeyDown);
     },
-    computed: {},
+    computed: {
+        tableheightWithPadding() {
+            if (!this.enginesFixedBottom) {
+                return this.tableheight;
+            }
+            
+            const engineHeight = this.engineRowLines * 38 + 16;
+            return {
+                ...this.tableheight,
+                paddingBottom: `${engineHeight}px`
+            };
+        },
+        computedEngineRowStyle() {
+            const baseStyle = { 
+                marginTop: '12px', 
+                display: 'flex', 
+                flexWrap: 'wrap', 
+                alignItems: 'center'
+            };
+            
+            if (!this.enginesFixedBottom) {
+                return {
+                    ...baseStyle,
+                    width: 'inherit',
+                    position: 'relative',
+                    zIndex: 100
+                };
+            }
+            
+            if (this.suggestionsVisible && this.suggestionBoxHeight > 0) {
+                return {
+                    ...baseStyle,
+                    position: 'absolute',
+                    left: 0,
+                    bottom: 0,
+                    width: '100%',
+                    zIndex: 200
+                };
+            }
+            
+            return baseStyle;
+        },
+        historyDaysTooltipStyle() {
+            if (!this.enginesFixedBottom) {
+                return {
+                    position: 'absolute',
+                    right: '40px',
+                    top: '0px'
+                };
+            }
+            
+            if (this.suggestionsVisible) {
+                return {
+                    position: 'absolute',
+                    right: '40px',
+                    bottom: `${this.engineRowLines * 38 + 8}px`,
+                    zIndex: 300,
+                    background: '#fff',
+                    padding: '4px 0'
+                };
+            }
+            
+            return {
+                position: 'fixed',
+                right: '40px',
+                bottom: `${this.engineRowLines * 38 + 56}px`,
+                zIndex: 300,
+                background: '#fff',
+                padding: '4px 0'
+            };
+        }
+    },
     watch: {
         query: function (query) {
             if (query == "") {
                 this.tableheight.height = defaultHeight;
+                this.suggestionsVisible = false;
+            } else {
+                this.$nextTick(() => {
+                    const suggestionEl = document.querySelector('.el-autocomplete-suggestion');
+                    if (suggestionEl) {
+                        this.suggestionsVisible = suggestionEl.style.display !== 'none';
+                    }
+                });
             }
+        },
+        engines() {
+            this.updateEngineRowLines();
+        },
+        enginesFixedBottom() {
+            this.updateEngineRowLines();
+        },
+        suggestionsVisible() {
+            this.updateEngineRowLines();
         }
     },
 
-    mounted() { }
+    mounted() {
+        this.updateEngineRowLines();
+    },
+    updated() {
+        this.updateEngineRowLines();
+    }
 };
 
 function parseUrl(url) {
@@ -428,3 +543,59 @@ function parseUrl(url) {
     return obj
 }
 </script>
+
+<style>
+/* 让 el-autocomplete 的下拉建议面板 z-index 更低，避免遮挡 engine 图标 */
+.el-autocomplete-suggestion {
+  z-index: 50 !important;
+}
+
+.engine-row-fixed-bottom {
+  position: fixed !important;
+  left: 0;
+  bottom: 0;
+  width: 100vw !important;
+  background: #fff;
+  z-index: 210 !important;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+  padding-bottom: 8px;
+  padding-top: 8px;
+  /* 新增布局样式 */
+  display: flex !important;
+}
+
+/* 当搜索建议打开时的样式 */
+.suggestions-active .engine-row-fixed-bottom {
+  position: absolute !important;
+  bottom: 0;
+}
+
+/* 新增搜索引擎选项区域样式 */
+.engine-options-area {
+  flex: 0 0 80%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  overflow-y: auto;
+  max-height: 150px;
+}
+
+/* 当历史天数工具提示不显示时，引擎选项占据全宽 */
+.engine-options-area.full-width {
+  flex: 0 0 100%;
+}
+
+/* 新增历史天数区域样式 */
+.history-days-area {
+  flex: 0 0 20%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0px;
+}
+
+/* 历史天数区域内的滑块样式 */
+.history-days-area .el-slider {
+  width: 100%;
+}
+</style>
