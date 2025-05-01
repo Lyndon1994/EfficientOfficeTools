@@ -184,6 +184,63 @@
         ></el-switch>
       </el-tooltip>
     </el-form-item>
+    <el-form-item label="">
+      <el-tooltip
+        class="item"
+        effect="dark"
+        :content="getMessage('popupSuggestEnabledTip')"
+        placement="top"
+      >
+        <el-switch
+          v-model="settings.popupSuggestEnabled"
+          :active-text="getMessage('popupSuggestEnabled')"
+        ></el-switch>
+      </el-tooltip>
+    </el-form-item>
+    <el-form-item label="">
+      <el-tooltip
+        class="item"
+        effect="dark"
+        :content="getMessage('popupSuggestEngineTip')"
+        placement="top"
+      >
+        <el-select v-model="settings.popupSuggestEngine" style="width: 120px;">
+          <el-option label="Bing" value="bing"></el-option>
+          <el-option label="Google" value="google"></el-option>
+        </el-select>
+        <span style="margin-left: 8px;">{{ getMessage('popupSuggestEngine') }}</span>
+      </el-tooltip>
+    </el-form-item>
+    <el-form-item label="">
+      <el-tooltip
+        class="item"
+        effect="dark"
+        :content="getMessage('popupHistoryEnabledTip')"
+        placement="top"
+      >
+        <el-switch
+          v-model="settings.popupHistoryEnabled"
+          :active-text="getMessage('popupHistoryEnabled')"
+        ></el-switch>
+      </el-tooltip>
+    </el-form-item>
+    <el-form-item label="">
+      <el-tooltip
+        class="item"
+        effect="dark"
+        :content="getMessage('popupHistoryDaysTip')"
+        placement="top"
+      >
+        <el-input-number
+          v-model="settings.popupHistoryDays"
+          :min="1"
+          :max="365"
+          :step="1"
+          style="width: 120px;"
+        ></el-input-number>
+        <span style="margin-left: 8px;">{{ getMessage('popupHistoryDays') }}</span>
+      </el-tooltip>
+    </el-form-item>
 
     <el-form-item label="">
       {{ getMessage("themeColorTip") }}:
@@ -243,6 +300,10 @@ export default defineComponent({
                 showTopSearchSwitch: true,
                 searchInNewTab: true,
                 themeColor: 'rgba(144, 238, 144, 0.56)',
+                popupSuggestEnabled: true,
+                popupSuggestEngine: 'bing',
+                popupHistoryEnabled: true,
+                popupHistoryDays: 90,
             },
             predefineColors: [
                 '#FFFFFF',
@@ -273,6 +334,10 @@ export default defineComponent({
                 showTopSearchSwitch: true,
                 searchInNewTab: true,
                 themeColor: 'rgba(144, 238, 144, 0.56)',
+                popupSuggestEnabled: true,
+                popupSuggestEngine: 'bing',
+                popupHistoryEnabled: true,
+                popupHistoryDays: 90,
             }; // 默认配置
             // 读取数据，第一个参数是指定要读取的key以及设置默认值
             let that = this;
@@ -283,6 +348,10 @@ export default defineComponent({
                 that.settings.showTopSearchSwitch = items.showTopSearchSwitch;
                 that.settings.searchInNewTab = items.searchInNewTab;
                 that.settings.themeColor = items.themeColor;
+                that.settings.popupSuggestEnabled = items.popupSuggestEnabled;
+                that.settings.popupSuggestEngine = items.popupSuggestEngine;
+                that.settings.popupHistoryEnabled = items.popupHistoryEnabled;
+                that.settings.popupHistoryDays = items.popupHistoryDays;
                 return true;
             });
             this.openReadme();
@@ -334,6 +403,10 @@ export default defineComponent({
                 showTopSearchSwitch: this.settings.showTopSearchSwitch,
                 searchInNewTab: this.settings.searchInNewTab,
                 themeColor: this.settings.themeColor,
+                popupSuggestEnabled: this.settings.popupSuggestEnabled,
+                popupSuggestEngine: this.settings.popupSuggestEngine,
+                popupHistoryEnabled: this.settings.popupHistoryEnabled,
+                popupHistoryDays: this.settings.popupHistoryDays,
             },
                 function () {
                     console.log("saved");

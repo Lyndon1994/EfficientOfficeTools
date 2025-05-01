@@ -48,5 +48,13 @@
     "export": {"message": "导出"},
     "import": {"message": "导入"},
     "importSuccess": {"message": "导入成功"},
-    "importInvalid": {"message": "无效的配置文件"}
+    "importInvalid": {"message": "无效的配置文件"},
+    "popupSuggestEnabled": {"message": "popup启用搜索建议"},
+    "popupSuggestEnabledTip": {"message": "是否在popup页面启用搜索建议"},
+    "popupSuggestEngine": {"message": "建议引擎"},
+    "popupSuggestEngineTip": {"message": "选择popup页面搜索建议使用Bing还是Google"},
+    "popupHistoryEnabled": {"message": "启用历史和收藏夹匹配"},
+    "popupHistoryEnabledTip": {"message": "是否在popup页面启用历史记录和收藏夹匹配"},
+    "popupHistoryDays": {"message": "历史匹配天数"},
+    "popupHistoryDaysTip": {"message": "popup页面匹配历史记录的默认天数"}
 }

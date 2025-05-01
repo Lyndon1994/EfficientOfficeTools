@@ -48,5 +48,13 @@
     "export": {"message": "Export"},
     "import": {"message": "Import"},
     "importSuccess": {"message": "Import succeeded"},
-    "importInvalid": {"message": "Invalid config file"}
+    "importInvalid": {"message": "Invalid config file"},
+    "popupSuggestEnabled": {"message": "Enable search suggestions in popup"},
+    "popupSuggestEnabledTip": {"message": "Enable or disable search suggestions in the popup window"},
+    "popupSuggestEngine": {"message": "Suggestion engine"},
+    "popupSuggestEngineTip": {"message": "Choose which engine to use for suggestions in popup (Bing or Google)"},
+    "popupHistoryEnabled": {"message": "Enable history & bookmarks match"},
+    "popupHistoryEnabledTip": {"message": "Enable or disable matching history and bookmarks in popup"},
+    "popupHistoryDays": {"message": "History match days"},
+    "popupHistoryDaysTip": {"message": "Default days for matching history records in popup"}
 }

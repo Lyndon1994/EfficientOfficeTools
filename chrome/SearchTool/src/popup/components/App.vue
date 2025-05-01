@@ -9,7 +9,7 @@
                 class="inline-input"
                 v-model="query"
                 @focus="handleFocus"
-                :fetch-suggestions="queryMatch"
+                :fetch-suggestions="(popupSuggestEnabled || popupHistoryEnabled) ? queryMatch : null"
                 placeholder="Search ..."
                 :trigger-on-focus="false"
                 :popper-append-to-body="false"
@@ -23,7 +23,7 @@
                 </template>
             </el-autocomplete>
         </el-row>
-        <el-row :style="{ width: 'inherit', marginTop: '10px', display: 'flex', flexWrap: 'wrap', alignItems: 'center' }">
+        <el-row :style="{ width: 'inherit', marginTop: '10px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', position: 'relative', zIndex: 100 }">
             <el-tag v-for="item in engines" :key="item.id" :type="item.id - 1 == selectId ? 'success' : 'info'"
                 :hit="item.id - 1 == selectId" :color="item.id - 1 == selectId ? '' : 'Transparent'" @click="search(item)"
                 @mouseenter="selectSearch(item)" style="margin-right: 4px; margin-bottom: 4px;">
@@ -77,6 +77,10 @@ export default {
             disabledHistoryTooltip: false,
             preHeight: defaultHeight,
             highlightFirstItem: false,
+            popupSuggestEnabled: true,
+            popupSuggestEngine: 'bing',
+            popupHistoryEnabled: true,
+            popupHistoryDays: 90,
         };
     },
 
@@ -87,6 +91,10 @@ export default {
                 'first': true,
                 'selectId': 0,
                 'searchInNewTab': true,
+                'popupSuggestEnabled': true,
+                'popupSuggestEngine': 'bing',
+                'popupHistoryEnabled': true,
+                'popupHistoryDays': 90,
             }; // 默认配置
             // 读取数据，第一个参数是指定要读取的key以及设置默认值
             let that = this;
@@ -103,6 +111,11 @@ export default {
                 that.first = items.first;
                 that.selectId = items.selectId;
                 that.searchInNewTab = items.searchInNewTab;
+                that.popupSuggestEnabled = items.popupSuggestEnabled;
+                that.popupSuggestEngine = items.popupSuggestEngine;
+                that.popupHistoryEnabled = items.popupHistoryEnabled;
+                that.popupHistoryDays = items.popupHistoryDays;
+                that.historyDays = that.popupHistoryDays;
                 console.log(that.engines);
                 console.log(that.first);
                 console.log("get with selectId " + that.selectId);
@@ -208,16 +221,23 @@ export default {
             return Math.min(360, (90 + length * 34));
         },
         googleSuggest(queryString, cb) {
+            let that = this;
+            this.highlightFirstItem = false;
             try {
                 this.$axios.get(`https://suggestqueries.google.com/complete/search?client=youtube&q=${queryString}&jsonp=window.google.ac.h`).then(function (res) {
-                    // console.log("google res.body:");
-                    // console.log(res);
                     if (res.status == 200) {
+                        // Google 返回格式: [query, [[suggest1, ...], [suggest2, ...], ...], {...}]
                         let data = JSON.parse(res.data.replace(/window.google.ac.h\((.*)\)/, "$1"));
-                        let results = data[1].map(i => ({ value: i[0] }));
-                        results = results.slice(0, 5).concat(that.queryMatchHistory).concat(results.slice(5))
+                        let results = Array.isArray(data[1]) ? data[1].map(i => ({ value: i[0] })) : [];
+                        // 置顶 pin 或高频历史
+                        const topQ = that.queryMatchHistory.filter(item => item.pin).concat(that.queryMatchHistory.filter(obj => obj.visitCount && obj.visitCount >= 3)).slice(0, 1);
+                        const topQUrls = topQ.map(item => item.url);
+                        if (topQ.length > 0) {
+                            that.highlightFirstItem = true;
+                        }
+                        const lastQ = that.queryMatchHistory.filter(obj => !topQUrls.includes(obj.url));
+                        results = topQ.concat(results.slice(0, 5)).concat(lastQ).concat(results.slice(5));
                         that.tableheight.height = that.getHeight(results.length) + 'px';
-                        // console.log(results);
                         cb(results);
                     }
                 }, function () {
@@ -263,14 +283,28 @@ export default {
             }
         },
         queryMatch(queryString, cb) {
-            this.tableheight.width = largeWidth;
-            this.showHistoryDaysTooltip = true;
+            // 控制建议和历史/收藏夹匹配
             let that = this;
             let bookmarks = [];
             this.queryMatchHistory = [];
             console.log("query match start: " + queryString + " history days: " + this.historyDays);
-            // this.googleSuggest(queryString);
-            this.bingSuggest(queryString, cb);
+
+            // 搜索建议
+            if (this.popupSuggestEnabled) {
+                this.tableheight.width = largeWidth;
+                if (this.popupSuggestEngine === 'bing') {
+                    this.bingSuggest(queryString, cb);
+                } else if (this.popupSuggestEngine === 'google') {
+                    this.googleSuggest(queryString, cb);
+                }
+            }
+
+            // 历史/收藏夹匹配
+            if (!this.popupHistoryEnabled) {
+                return;
+            }
+            this.tableheight.width = largeWidth;
+            this.showHistoryDaysTooltip = true;
 
             chrome.bookmarks.search(queryString, function (results) {
                 bookmarks = results.filter((obj) => obj['url'] != null).slice(0, 10);
@@ -278,7 +312,7 @@ export default {
             // TODO: 过滤减号后面的字符
             let queryFormats = queryString.match(/^[^-]+/);
             let filterStrs = queryString.match(/(?<=-)\w+/g);
-            queryString = queryFormats[0];
+            queryString = queryFormats ? queryFormats[0] : queryString;
             chrome.history.search({
                 "text": queryString,
                 "maxResults": 30,
