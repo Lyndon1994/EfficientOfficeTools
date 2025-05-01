@@ -19,7 +19,7 @@
     "reseted": {"message": "重置成功"},
     "defaultEnginesConfig": {"message": "[{\"name\":\"百度\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"1\",\"inShortcuts\":true,\"inRight\":true,\"inTooltip\":true,\"icon\":\"assets/baidu.png\"},{\"name\":\"Google\",\"url\":\"https://www.google.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":true,\"inShortcuts\":true,\"inTooltip\":true,\"icon\":\"assets/google.png\"},{\"name\":\"Bing\",\"url\":\"https://www.bing.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"3\",\"inRight\":true,\"inShortcuts\":true,\"inTooltip\":true,\"icon\":\"assets/bing.png\"},{\"name\":\"搜狗\",\"url\":\"https://www.sogou.com/web?query=%s\",\"inPopup\":true,\"id\":\"4\",\"inRight\":true,\"inShortcuts\":false,\"inTooltip\":true,\"icon\":\"assets/sougou.ico\"},{\"name\":\"豆瓣\",\"url\":\"https://www.douban.com/search?q=%s\",\"inPopup\":true,\"id\":\"5\",\"inRight\":true,\"inShortcuts\":false,\"inTooltip\":true,\"icon\":\"assets/douban.ico\"}]"},
     "searchFor": {
-        "message": "使用$engine$搜索“%s”",
+        "message": "$engine$: “%s”",
         "placeholders": {
             "engine": {
                 "content": "$1"
@@ -44,5 +44,9 @@
     "open": {"message": "打开"},
     "refresh": {"message": "刷新页面后生效"},
     "comment": {"message": "如果你觉得还挺好用的，或者有些建议，帮忙给个评论吧，谢谢！ <a href='https://chrome.google.com/webstore/detail/search-tool/fjjkihnjlinkjpfeooipegebcakeocef'>快戳这里</a>😊"},
-    "readme": {"message": "默认一键切换搜索快捷键是(win)Alt+S (mac)Ctrl+S, 建议配置激活扩展快捷键，访问chrome://extensions/shortcuts，如Ctrl/Cmd+K，更快捷的打开搜索栏 😉"}
+    "readme": {"message": "默认一键切换搜索快捷键是(win)Alt+S (mac)Ctrl+S, 建议配置激活扩展快捷键，访问chrome://extensions/shortcuts，如Ctrl/Cmd+K，更快捷的打开搜索栏 😉"},
+    "export": {"message": "导出"},
+    "import": {"message": "导入"},
+    "importSuccess": {"message": "导入成功"},
+    "importInvalid": {"message": "无效的配置文件"}
 }

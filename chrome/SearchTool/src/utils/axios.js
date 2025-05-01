@@ -11,10 +11,10 @@ class HttpRequest {
     const config = {
       baseURL: this.baseUrl,
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
+        "Content-Type": "application/x-www-form-urlencoded",
       },
       transformRequest: [
-        function(data, config) {
+        function (data, config) {
           // 对 data 进行任意转换处理
           if (
             config["Content-Type"] &&
@@ -29,8 +29,8 @@ class HttpRequest {
           } else {
             return qs.stringify(data, config);
           }
-        }
-      ]
+        },
+      ],
     };
 
     return config;
@@ -39,13 +39,13 @@ class HttpRequest {
   interceptors(instance) {
     // 请求拦截
     instance.interceptors.request.use(
-      config => config,
-      error => Promise.reject(error)
+      (config) => config,
+      (error) => Promise.reject(error),
     );
     // 响应拦截
     instance.interceptors.response.use(
-      res => Promise.resolve(res),
-      error => Promise.reject(error)
+      (res) => Promise.resolve(res),
+      (error) => Promise.reject(error),
     );
   }
 

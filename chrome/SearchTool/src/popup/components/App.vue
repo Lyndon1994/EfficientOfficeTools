@@ -1,19 +1,32 @@
 <!-- eslint-disable prettier/prettier -->
 <template>
-    <el-form :style="tableheight" ref="form" label-width="10px" size="mini" @submit.native.prevent>
+    <el-form :style="tableheight" ref="form" label-width="10px" size="mini" @submit.prevent>
         <el-row style="width: inherit;">
-            <el-autocomplete size="small" ref="queryInput" style="width: inherit;" class="inline-input" v-model="query"
-                @focus="handleFocus" :fetch-suggestions="queryMatch" placeholder="Search ..." :trigger-on-focus="false"
-                :popper-append-to-body="false" :highlight-first-item="highlightFirstItem" @select="handleSelect" @keyup.enter.native="onSubmit" @blur="handleBlur">
-                <template slot-scope="{ item }">
-                    <span v-html="item.value">{{ item.value }}</span>
+            <el-autocomplete
+                size="small"
+                ref="queryInput"
+                style="width: inherit;"
+                class="inline-input"
+                v-model="query"
+                @focus="handleFocus"
+                :fetch-suggestions="queryMatch"
+                placeholder="Search ..."
+                :trigger-on-focus="false"
+                :popper-append-to-body="false"
+                :highlight-first-item="highlightFirstItem"
+                @select="handleSelect"
+                @keyup.enter="onSubmit"
+                @blur="handleBlur"
+            >
+                <template v-slot="{ item }">
+                    <span v-html="item.value"></span>
                 </template>
             </el-autocomplete>
         </el-row>
-        <el-row style="position: fixed; bottom: 0px; width: inherit;">
-            <el-tag v-for="(item, index) in engines" :key="item.id" :type="item.id - 1 == selectId ? 'success' : 'info'"
+        <el-row :style="{ width: 'inherit', marginTop: '10px', display: 'flex', flexWrap: 'wrap', alignItems: 'center' }">
+            <el-tag v-for="item in engines" :key="item.id" :type="item.id - 1 == selectId ? 'success' : 'info'"
                 :hit="item.id - 1 == selectId" :color="item.id - 1 == selectId ? '' : 'Transparent'" @click="search(item)"
-                @mouseenter.native="selectSearch(item)">
+                @mouseenter="selectSearch(item)" style="margin-right: 4px; margin-bottom: 4px;">
                 <img v-if="item.icon" style="width: 30px; height: 30px;" :src="item.icon" />
                 <span v-if="!item.icon">{{ item.name }}</span>
             </el-tag>

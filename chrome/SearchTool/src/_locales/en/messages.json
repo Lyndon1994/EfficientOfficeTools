@@ -19,7 +19,7 @@
     "reseted": {"message": "Reset successful"},
     "defaultEnginesConfig": {"message": "[{\"name\":\"Google\",\"url\":\"https://www.google.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"1\",\"inRight\":true,\"inShortcuts\":true,\"inTooltip\":true,\"icon\":\"assets/google.png\"},{\"name\":\"Bing\",\"url\":\"https://www.bing.com/search?ie=utf-8&q=%s\",\"inPopup\":true,\"id\":\"2\",\"inRight\":true,\"inShortcuts\":true,\"inTooltip\":true,\"icon\":\"assets/bing.png\"},{\"name\":\"Baidu\",\"url\":\"https://www.baidu.com/s?wd=%s\",\"inPopup\":true,\"id\":\"3\",\"inShortcuts\":true,\"inRight\":true,\"inTooltip\":true,\"icon\":\"assets/baidu.png\"},{\"name\":\"Sogou\",\"url\":\"https://www.sogou.com/web?query=%s\",\"inPopup\":true,\"id\":\"4\",\"inRight\":true,\"inShortcuts\":false,\"inTooltip\":false,\"icon\":\"assets/sougou.ico\"},{\"name\":\"Douban\",\"url\":\"https://www.douban.com/search?q=%s\",\"inPopup\":true,\"id\":\"5\",\"inRight\":true,\"inShortcuts\":false,\"inTooltip\":false,\"icon\":\"assets/douban.ico\"}]"},
     "searchFor": {
-        "message": "Search $engine$ for \"%s\"",
+        "message": "$engine$: \"%s\"",
         "placeholders": {
             "engine": {
                 "content": "$1"
@@ -44,5 +44,9 @@
     "open": {"message": "Open"},
     "refresh": {"message": "It takes effect after the page is refreshed."},
     "comment": {"message": "If you like it, please give a comment, thanks! <a href='https://chrome.google.com/webstore/detail/search-tool/fjjkihnjlinkjpfeooipegebcakeocef'>Click here.</a> 😊"},
-    "readme": {"message": "The default one-click switch search shortcut is (win)Alt+S (mac)Ctrl+S. <br/> But sometimes it will set failed, please set it by yourself, open chrome://extensions/shortcuts.<br/>It is recommended to configure activate extension shortcuts, open chrome://extensions/shortcuts, such as Ctrl/Cmd+K, to open the search bar more quickly. 😉"}
+    "readme": {"message": "The default one-click switch search shortcut is (win)Alt+S (mac)Ctrl+S. <br/> But sometimes it will set failed, please set it by yourself, open chrome://extensions/shortcuts.<br/>It is recommended to configure activate extension shortcuts, open chrome://extensions/shortcuts, such as Ctrl/Cmd+K, to open the search bar more quickly. 😉"},
+    "export": {"message": "Export"},
+    "import": {"message": "Import"},
+    "importSuccess": {"message": "Import succeeded"},
+    "importInvalid": {"message": "Invalid config file"}
 }
