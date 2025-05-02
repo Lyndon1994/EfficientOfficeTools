@@ -358,20 +358,32 @@ export default defineComponent({
                 popupHistoryEnabled: true,
                 popupHistoryDays: 90,
             }; // 默认配置
-            // 读取数据，第一个参数是指定要读取的key以及设置默认值
             let that = this;
+            console.log("[options] init defaultConfig:", defaultConfig);
             chrome.storage.sync.get(defaultConfig, function (items) {
-                that.engines = JSON.parse(items.engines);
-                that.settings.select2clipboard = items.select2clipboard;
-                that.settings.showTooltip = items.showTooltip;
-                that.settings.showTopSearchSwitch = items.showTopSearchSwitch;
-                that.settings.searchInNewTab = items.searchInNewTab;
-                that.settings.themeColor = items.themeColor;
-                that.settings.textColor = items.textColor; // 新增
-                that.settings.popupSuggestEnabled = items.popupSuggestEnabled;
-                that.settings.popupSuggestEngine = items.popupSuggestEngine;
-                that.settings.popupHistoryEnabled = items.popupHistoryEnabled;
-                that.settings.popupHistoryDays = items.popupHistoryDays;
+                console.log("[options] chrome.storage.sync.get result:", items);
+                let engines = JSON.parse(items.engines);
+                // 先从 local 取 iconData
+                chrome.storage.local.get(null, function(localItems) {
+                    engines.forEach(engine => {
+                        if (localItems && localItems['iconData_' + engine.id]) {
+                            engine.iconData = localItems['iconData_' + engine.id];
+                        }
+                    });
+                    that.engines = engines;
+                    that.settings.select2clipboard = items.select2clipboard;
+                    that.settings.showTooltip = items.showTooltip;
+                    that.settings.showTopSearchSwitch = items.showTopSearchSwitch;
+                    that.settings.searchInNewTab = items.searchInNewTab;
+                    that.settings.themeColor = items.themeColor;
+                    that.settings.textColor = items.textColor; // 新增
+                    that.settings.popupSuggestEnabled = items.popupSuggestEnabled;
+                    that.settings.popupSuggestEngine = items.popupSuggestEngine;
+                    that.settings.popupHistoryEnabled = items.popupHistoryEnabled;
+                    that.settings.popupHistoryDays = items.popupHistoryDays;
+                    console.log("[options] loaded engines:", that.engines);
+                    console.log("[options] loaded settings:", that.settings);
+                });
                 return true;
             });
             this.openReadme();
@@ -404,7 +416,22 @@ export default defineComponent({
                 }
             });
         },
-        onSubmit() {
+        async fetchIconData(iconUrl) {
+            if (!iconUrl || iconUrl.startsWith('data:')) return iconUrl;
+            try {
+                const response = await fetch(iconUrl, {mode: 'cors'});
+                const blob = await response.blob();
+                return await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            } catch (e) {
+                return iconUrl; // fallback
+            }
+        },
+        async onSubmit() {
             let that = this;
             let offset = 0;
             this.engines = this.engines.filter((item) => {
@@ -412,12 +439,25 @@ export default defineComponent({
                 item.id = offset;
                 return item;
             });
-            // 发送给background.js，更新右键菜单
-            chrome.runtime.sendMessage(this.engines, function (response) {
-                console.log(response);
+            // 先存 iconData 到 local
+            let localIconData = {};
+            for (let engine of this.engines) {
+                if (engine.icon && !engine.icon.startsWith('data:')) {
+                    engine.iconData = await this.fetchIconData(engine.icon);
+                } else if (engine.icon && engine.icon.startsWith('data:')) {
+                    engine.iconData = engine.icon;
+                }
+                if (engine.iconData) {
+                    localIconData['iconData_' + engine.id] = engine.iconData;
+                }
+            }
+            chrome.storage.local.set(localIconData, function() {
+                console.log("[options] chrome.storage.local.set iconData:", localIconData);
             });
-            chrome.storage.sync.set({
-                engines: JSON.stringify(this.engines),
+            // sync 只存元数据
+            const enginesMeta = this.engines.map(({iconData, ...rest}) => rest);
+            const saveObj = {
+                engines: JSON.stringify(enginesMeta),
                 select2clipboard: this.settings.select2clipboard,
                 showTooltip: this.settings.showTooltip,
                 showTopSearchSwitch: this.settings.showTopSearchSwitch,
@@ -428,16 +468,82 @@ export default defineComponent({
                 popupSuggestEngine: this.settings.popupSuggestEngine,
                 popupHistoryEnabled: this.settings.popupHistoryEnabled,
                 popupHistoryDays: this.settings.popupHistoryDays,
-            },
+            };
+            console.log("[options] onSubmit saveObj:", saveObj);
+            chrome.runtime.sendMessage(enginesMeta, function (response) {
+                console.log("[options] runtime.sendMessage response:", response);
+            });
+            chrome.storage.sync.set(saveObj,
                 function () {
-                    console.log("saved");
+                    console.log("[options] chrome.storage.sync.set success", saveObj);
                     that.$message({
                         message: that.getMessage('saved') + ". " + that.getMessage('refresh'),
                         type: "success",
                     });
+                    chrome.storage.sync.get(null, function (allItems) {
+                        console.log("[options] chrome.storage.sync.get after set:", allItems);
+                    });
                     return true;
                 }
             );
+        },
+        exportConfig() {
+            // 导出时合并 iconData
+            chrome.storage.local.get(null, (localItems) => {
+                const enginesWithIcon = this.engines.map(engine => {
+                    let iconData = localItems['iconData_' + engine.id];
+                    return {...engine, iconData};
+                });
+                const data = {
+                    engines: enginesWithIcon,
+                    settings: this.settings
+                };
+                const json = JSON.stringify(data, null, 2);
+                const blob = new Blob([json], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "search_tool_config.json";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        },
+        importConfig(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    console.log("[options] importConfig loaded data:", data);
+                    if (data.engines && data.settings) {
+                        this.engines = data.engines;
+                        this.settings = Object.assign(this.settings, data.settings);
+                        if (!this.settings.textColor) {
+                            this.settings.textColor = '#202124';
+                        }
+                        // 导入 iconData 到 local
+                        let localIconData = {};
+                        this.engines.forEach(engine => {
+                            if (engine.iconData) {
+                                localIconData['iconData_' + engine.id] = engine.iconData;
+                            }
+                        });
+                        chrome.storage.local.set(localIconData, function() {
+                            console.log("[options] importConfig set iconData to local:", localIconData);
+                        });
+                        this.onSubmit();
+                        this.$message.success(this.getMessage('importSuccess') || '导入成功');
+                    } else {
+                        this.$message.error(this.getMessage('importInvalid') || '无效的配置文件');
+                    }
+                } catch (err) {
+                    console.error("[options] importConfig parse error:", err);
+                    this.$message.error(this.getMessage('importInvalid') || '无效的配置文件');
+                }
+            };
+            reader.readAsText(file);
+            return false;
         },
         reset() {
             let that = this;
@@ -447,56 +553,19 @@ export default defineComponent({
                 type: 'warning'
             }).then(() => {
                 chrome.storage.sync.clear(function (items) {
+                    console.log("[options] chrome.storage.sync.clear done", items);
                     that.$message({
                         message: that.getMessage('reseted'),
                         type: "success",
+                    });
+                    chrome.storage.sync.get(null, function (allItems) {
+                        console.log("[options] chrome.storage.sync.get after clear:", allItems);
                     });
                     return true;
                 });
                 location.reload();
             }).catch(() => {
             });
-        },
-        exportConfig() {
-            const data = {
-                engines: this.engines,
-                settings: this.settings
-            };
-            const json = JSON.stringify(data, null, 2);
-            const blob = new Blob([json], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "search_tool_config.json";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        },
-        importConfig(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.engines && data.settings) {
-                        this.engines = data.engines;
-                        this.settings = Object.assign(this.settings, data.settings);
-                        // 兼容旧配置
-                        if (!this.settings.textColor) {
-                            this.settings.textColor = '#202124';
-                        }
-                        this.onSubmit();
-                        this.$message.success(this.getMessage('importSuccess') || '导入成功');
-                    } else {
-                        this.$message.error(this.getMessage('importInvalid') || '无效的配置文件');
-                    }
-                } catch (err) {
-                    this.$message.error(this.getMessage('importInvalid') || '无效的配置文件');
-                }
-            };
-            reader.readAsText(file);
-            // 阻止 el-upload 默认上传
-            return false;
         },
         getMessage(key) {
             return chrome.i18n.getMessage(key);

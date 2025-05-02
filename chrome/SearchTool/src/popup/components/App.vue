@@ -35,8 +35,8 @@
                 <el-tag v-for="item in engines" :key="item.id" :type="item.id - 1 == selectId ? 'success' : 'info'"
                     :hit="item.id - 1 == selectId" :color="item.id - 1 == selectId ? '' : 'Transparent'" @click="search(item)"
                     @mouseenter="selectSearch(item)" style="margin-right: 4px; margin-bottom: 10px;">
-                    <img v-if="item.icon" style="width: 30px; height: 30px;" :src="item.icon" />
-                    <span v-if="!item.icon">{{ item.name }}</span>
+                    <img v-if="item.icon || item.iconData" style="width: 30px; height: 30px;" :src="item.iconData || item.icon" />
+                    <span v-if="!item.icon && !item.iconData">{{ item.name }}</span>
                 </el-tag>
             </div>
             
@@ -111,31 +111,45 @@ export default {
                 'popupHistoryDays': 90,
             };
             let that = this;
+            console.log("[popup] init defaultConfig:", defaultConfig);
             chrome.storage.sync.get(defaultConfig, function (items) {
-                that.engines = JSON.parse(items.engines);
-                let offset = 0;
-                that.engines = that.engines.filter(item => {
-                    if (item.name && item.url && item.inPopup === true) {
-                        offset++;
-                        item.id = offset;
-                        return item;
+                console.log("[popup] chrome.storage.sync.get result:", items);
+                let rawEngines;
+                try {
+                    rawEngines = JSON.parse(items.engines);
+                } catch (e) {
+                    console.error("[popup] Failed to parse engines from storage:", items.engines, e);
+                    rawEngines = [];
+                }
+                // 从 local 获取 iconData
+                chrome.storage.local.get(null, function(localItems) {
+                    let offset = 0;
+                    that.engines = rawEngines.filter(item => {
+                        if (item.name && item.url && item.inPopup === true) {
+                            offset++;
+                            item.id = offset;
+                            if (localItems && localItems['iconData_' + item.id]) {
+                                item.iconData = localItems['iconData_' + item.id];
+                            }
+                            return item;
+                        }
+                    });
+                    that.first = items.first;
+                    that.selectId = items.selectId;
+                    that.searchInNewTab = items.searchInNewTab;
+                    that.popupSuggestEnabled = items.popupSuggestEnabled;
+                    that.popupSuggestEngine = items.popupSuggestEngine;
+                    that.popupHistoryEnabled = items.popupHistoryEnabled;
+                    that.popupHistoryDays = items.popupHistoryDays;
+                    that.historyDays = that.popupHistoryDays;
+                    console.log("[popup] loaded engines:", that.engines);
+                    console.log("[popup] loaded first:", that.first);
+                    console.log("[popup] get with selectId", that.selectId);
+                    if (that.selectId >= that.engines.length) {
+                        that.selectId = 0;
+                        console.log("[popup] change selectId to", that.selectId);
                     }
                 });
-                that.first = items.first;
-                that.selectId = items.selectId;
-                that.searchInNewTab = items.searchInNewTab;
-                that.popupSuggestEnabled = items.popupSuggestEnabled;
-                that.popupSuggestEngine = items.popupSuggestEngine;
-                that.popupHistoryEnabled = items.popupHistoryEnabled;
-                that.popupHistoryDays = items.popupHistoryDays;
-                that.historyDays = that.popupHistoryDays;
-                console.log(that.engines);
-                console.log(that.first);
-                console.log("get with selectId " + that.selectId);
-                if (that.selectId >= that.engines.length) {
-                    that.selectId = 0;
-                    console.log("change selectId to " + that.selectId);
-                }
             });
 
             chrome.tabs.query({ active: true }, function (tabs) {
@@ -144,6 +158,7 @@ export default {
                 that.query = urlObj['wd'] || urlObj['word'] || urlObj['q'] || urlObj['query'] || urlObj['w'] || "";
                 that.query = decodeURI(that.query);
                 that.tabIndex = tab.index;
+                console.log("[popup] tab info:", tab, "parsed query:", that.query);
             });
             this.$nextTick(() => {
                 this.$refs['queryInput'].focus();

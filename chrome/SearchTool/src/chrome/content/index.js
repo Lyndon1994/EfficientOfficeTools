@@ -23,42 +23,50 @@ function isHashChanged() {
 // 读取数据，第一个参数是指定要读取的key以及设置默认值
 chrome.storage.sync.get(addonConfig, function (items) {
   addonConfig.engines = JSON.parse(items.engines);
-  addonConfig.select2clipboard = items.select2clipboard;
-  addonConfig.showTooltip = items.showTooltip;
-  addonConfig.showTopSearchSwitch = items.showTopSearchSwitch;
-  addonConfig.searchInNewTab = items.searchInNewTab;
-  addonConfig.themeColor = items.themeColor;
-  addonConfig.textColor = items.textColor || "#202124";
+  // 从 local 获取 iconData
+  chrome.storage.local.get(null, function(localItems) {
+    addonConfig.engines.forEach(engine => {
+      if (localItems && localItems['iconData_' + engine.id]) {
+        engine.icon = localItems['iconData_' + engine.id];
+      }
+    });
+    addonConfig.select2clipboard = items.select2clipboard;
+    addonConfig.showTooltip = items.showTooltip;
+    addonConfig.showTopSearchSwitch = items.showTopSearchSwitch;
+    addonConfig.searchInNewTab = items.searchInNewTab;
+    addonConfig.themeColor = items.themeColor;
+    addonConfig.textColor = items.textColor || "#202124";
 
-  // 展示顶部切换菜单
-  if (addonConfig.showTopSearchSwitch) {
-    var domains = document.domain.split(".");
-    var needCreateTopTooltip = false;
-    if (domains.length >= 2) {
-      var domain = domains[1];
-      if (domains.length == 2 || domain == "com") {
-        domain = domains[0];
-      }
-      addonConfig.engines.forEach((engine) => {
-        if (engine.url && engine.inPopup && engine.url.indexOf(domain) != -1) {
-          needCreateTopTooltip = true;
+    // 展示顶部切换菜单
+    if (addonConfig.showTopSearchSwitch) {
+      var domains = document.domain.split(".");
+      var needCreateTopTooltip = false;
+      if (domains.length >= 2) {
+        var domain = domains[1];
+        if (domains.length == 2 || domain == "com") {
+          domain = domains[0];
         }
-      });
-      if (domain == "baidu" || domain == "google") {
-        // baidu或者Google搜索词变化后网页不刷新，onhashchange也监听不了
-        setInterval(function () {
-          var ischanged = isHashChanged();
-          if (ischanged) {
-            hashChange();
+        addonConfig.engines.forEach((engine) => {
+          if (engine.url && engine.inPopup && engine.url.indexOf(domain) != -1) {
+            needCreateTopTooltip = true;
           }
-        }, 3000);
+        });
+        if (domain == "baidu" || domain == "google") {
+          // baidu或者Google搜索词变化后网页不刷新，onhashchange也监听不了
+          setInterval(function () {
+            var ischanged = isHashChanged();
+            if (ischanged) {
+              hashChange();
+            }
+          }, 3000);
+        }
+      }
+      if (needCreateTopTooltip) {
+        createTopTooltip();
       }
     }
-    if (needCreateTopTooltip) {
-      createTopTooltip();
-    }
-  }
-  return true;
+    return true;
+  });
 });
 
 //监听触发操作
@@ -126,13 +134,10 @@ function createTooltip(e) {
     if (engine.name && engine.url && engine.inTooltip) {
       inTooltipCount += 1;
       var url = engine.url.replace("%s", encodeURIComponent(selectTxt));
-      if (addonConfig.themeStyle == "text" || !engine.icon) {
+      if (addonConfig.themeStyle == "text" || !(engine.icon || engine.iconData)) {
         searchContent += `<div class="addon_xlj_search_parts_engine addon_xlj_link_color" data-url="${url}" title="${engine.name}"><a style="color:${addonConfig.textColor};" target="${addonConfig.searchInNewTab ? "_blank" : "_self"}" href="${url}">${engine.name}</a></div>`;
       } else {
-        var icon = chrome.runtime.getURL(engine.icon);
-        if (engine.icon.indexOf("http") !== -1) {
-          icon = engine.icon;
-        }
+        var icon = engine.iconData || engine.icon;
         searchContent += `<a class="addon_xlj_search_parts_engine" style="color:${addonConfig.textColor};" target="${addonConfig.searchInNewTab ? "_blank" : "_self"}" href="${url}"><img style="width: 22px; height: 22px;" src="${icon}" alt="${engine.name}"></a>`;
       }
     }
@@ -191,13 +196,10 @@ function createTopTooltip() {
     if (engine.name && engine.url && engine.inPopup) {
       inTooltipCount += 1;
       var url = engine.url.replace("%s", query);
-      if (addonConfig.themeStyle == "text" || !engine.icon) {
+      if (addonConfig.themeStyle == "text" || !(engine.icon || engine.iconData)) {
         searchContent += `<div class="addon_xlj_search_parts_engine addon_xlj_link_color" data-url="${url}" title="${engine.name}"><a style="color:${addonConfig.textColor};" target="${addonConfig.searchInNewTab ? "_blank" : "_self"}" href="${url}">${engine.name}</a></div>`;
       } else {
-        var icon = chrome.runtime.getURL(engine.icon);
-        if (engine.icon.indexOf("http") !== -1) {
-          icon = engine.icon;
-        }
+        var icon = engine.iconData || engine.icon;
         searchContent += `<a class="addon_xlj_search_parts_engine" style="color:${addonConfig.textColor};" target="${addonConfig.searchInNewTab ? "_blank" : "_self"}" href="${url}"><img style="width: 22px; height: 22px;" src="${icon}" alt="${engine.name}"></a>`;
       }
     }
