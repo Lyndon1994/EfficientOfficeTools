@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const manifest = require(path.resolve(__dirname, "../chrome/manifest.json"));
 const ChromeExtension = require("crx");
-const crxName = `${manifest.name}-v${manifest.version}.crx`;
+const crxName = `search-tool-v${manifest.version}.crx`;
 const crx = new ChromeExtension({
   privateKey: fs.readFileSync(path.resolve(__dirname, "../../dist.pem")),
 });
