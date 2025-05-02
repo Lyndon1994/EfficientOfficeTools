@@ -6,42 +6,42 @@ const path = require("path");
 const copyFiles = [
   {
     from: path.resolve("src/chrome/manifest.json"),
-    to: `${path.resolve("dist")}/manifest.json`
+    to: `${path.resolve("dist")}/manifest.json`,
   },
   {
     from: path.resolve("src/assets"),
-    to: path.resolve("dist/assets")
+    to: path.resolve("dist/assets"),
   },
   {
     from: path.resolve("src/chrome/background/index.js"),
-    to: path.resolve("dist/js/background.js")
+    to: path.resolve("dist/js/background.js"),
   },
   {
     from: path.resolve("src/chrome/content/index.js"),
-    to: path.resolve("dist/js/content.js")
+    to: path.resolve("dist/js/content.js"),
   },
   {
     from: path.resolve("src/chrome/content/content.css"),
-    to: path.resolve("dist/css/content.css")
+    to: path.resolve("dist/css/content.css"),
   },
   {
     from: path.resolve("src/_locales"),
-    to: path.resolve("dist/_locales")
-  }
+    to: path.resolve("dist/_locales"),
+  },
 ];
 
 const plugins = [
   new CopyWebpackPlugin({
-    patterns: copyFiles
-  })
+    patterns: copyFiles,
+  }),
 ];
 // 生产环境打包dist为zip
 if (process.argv.includes("--zip")) {
   plugins.push(
     new ZipWebpackPlugin({
       path: path.resolve("./"),
-      filename: "dist.zip"
-    })
+      filename: "dist.zip",
+    }),
   );
 }
 
@@ -53,11 +53,11 @@ const pages = {};
  */
 const chromeName = ["popup", "options"];
 
-chromeName.forEach(name => {
+chromeName.forEach((name) => {
   pages[name] = {
     entry: `src/${name}/index.js`,
     template: `src/${name}/index.html`,
-    filename: `${name}.html`
+    filename: `${name}.html`,
   };
 });
 
@@ -73,17 +73,17 @@ module.exports = {
       // background: "./src/chrome/background/index.js"
     },
     output: {
-      filename: "js/[name].js"
+      filename: "js/[name].js",
     },
-    plugins
+    plugins,
   },
   css: {
     extract: {
-      filename: "css/[name].css"
-    }
+      filename: "css/[name].css",
+    },
   },
 
-  chainWebpack: config => {
+  chainWebpack: (config) => {
     config.resolve.alias.set("@", path.resolve("src"));
     // 处理字体文件名，去除hash值
     const fontsRule = config.module.rule("fonts");
@@ -97,7 +97,7 @@ module.exports = {
       .loader("url-loader")
       .options({
         limit: 1000,
-        name: "fonts/[name].[ext]"
+        name: "fonts/[name].[ext]",
       });
-  }
+  },
 };

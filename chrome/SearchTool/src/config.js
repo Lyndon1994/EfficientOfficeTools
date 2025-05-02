@@ -2,5 +2,5 @@ export default {
   /**
    * 基地址
    */
-  baseUrl: "https://*" // 线上
+  baseUrl: "https://*", // 线上
 };

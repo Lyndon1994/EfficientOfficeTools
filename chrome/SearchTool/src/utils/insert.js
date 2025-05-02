@@ -22,7 +22,7 @@ function insertDomFactory(component, insertSelector) {
 // 将vue实例挂载到新创建的元素上
 function generateInsertDom(insertSelector, vm) {
   const dom = document.querySelectorAll(insertSelector);
-  dom.forEach(item => {
+  dom.forEach((item) => {
     const insert = document.createElement("div");
     insert.id = "insert-item";
     item.appendChild(insert);
