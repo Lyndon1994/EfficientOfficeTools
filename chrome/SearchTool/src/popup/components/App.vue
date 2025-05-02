@@ -128,8 +128,16 @@ export default {
                         if (item.name && item.url && item.inPopup === true) {
                             offset++;
                             item.id = offset;
-                            if (localItems && localItems['iconData_' + item.id]) {
-                                item.iconData = localItems['iconData_' + item.id];
+                            // 优先用 iconData_{icon}，再用 iconData_{name}
+                            let iconData;
+                            if (item.icon) {
+                                iconData = localItems['iconData_' + item.icon];
+                            }
+                            if (!iconData && item.name) {
+                                iconData = localItems['iconData_' + item.name];
+                            }
+                            if (iconData) {
+                                item.iconData = iconData;
                             }
                             return item;
                         }

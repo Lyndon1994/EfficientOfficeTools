@@ -448,7 +448,13 @@ export default defineComponent({
                     engine.iconData = engine.icon;
                 }
                 if (engine.iconData) {
-                    localIconData['iconData_' + engine.id] = engine.iconData;
+                    // 使用 engine.name 作为 key
+                    if (engine.name) {
+                        localIconData['iconData_' + engine.name] = engine.iconData;
+                    }
+                    if (engine.icon) {
+                        localIconData['iconData_' + engine.icon] = engine.iconData;
+                    }
                 }
             }
             chrome.storage.local.set(localIconData, function() {
@@ -491,7 +497,11 @@ export default defineComponent({
             // 导出时合并 iconData
             chrome.storage.local.get(null, (localItems) => {
                 const enginesWithIcon = this.engines.map(engine => {
-                    let iconData = localItems['iconData_' + engine.id];
+                    // 优先用 iconData_{icon}，再用 iconData_{name}
+                    let iconData = engine.icon ? localItems['iconData_' + engine.icon] : undefined;
+                    if (!iconData && engine.name) {
+                        iconData = localItems['iconData_' + engine.name];
+                    }
                     return {...engine, iconData};
                 });
                 const data = {
@@ -526,7 +536,12 @@ export default defineComponent({
                         let localIconData = {};
                         this.engines.forEach(engine => {
                             if (engine.iconData) {
-                                localIconData['iconData_' + engine.id] = engine.iconData;
+                                if (engine.name) {
+                                    localIconData['iconData_' + engine.name] = engine.iconData;
+                                }
+                                if (engine.icon) {
+                                    localIconData['iconData_' + engine.icon] = engine.iconData;
+                                }
                             }
                         });
                         chrome.storage.local.set(localIconData, function() {
