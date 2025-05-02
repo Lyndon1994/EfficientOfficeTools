@@ -10,6 +10,8 @@
     "inShortcuts": {"message": "Shortcut switch"},
     "inShortcutsTip": {"message": "When selected, the shortcut key can be switched in the search engine. For example, on the Baidu search page, press the shortcut key to quickly switch to Google search"},
     "searchEngine": {"message": "Search Engine"},
+    "generalSettings": {"message": "General Settings"},
+    "llmSettings": {"message": "LLM Settings"},
     "searchUrl": {"message": "Query url, %s alternative search term"},
     "searchIcon": {"message": "Icon URL"},
     "save": {"message": "Save"},
@@ -58,5 +60,14 @@
     "popupHistoryEnabled": {"message": "Enable history & bookmarks match"},
     "popupHistoryEnabledTip": {"message": "Enable or disable matching history and bookmarks in popup"},
     "popupHistoryDays": {"message": "History match days"},
-    "popupHistoryDaysTip": {"message": "Default days for matching history records in popup"}
+    "popupHistoryDaysTip": {"message": "Default days for matching history records in popup"},
+    "llmApiKey": {"message": "your-default-api-key"},
+    "llmEndpoint": {"message": "https://your-endpoint.example.com/openai/deployments/gpt-4.1-mini/chat/completions?api-version=2024-02-15-preview"},
+    "llmPrompt": {"message": "Please summarize the following web page content in HTML format, structured and pointwise, suitable for innerHTML display:\n%s"},
+    "llmMaxTokens": {"message": "32000"},
+    "llmTemperature": {"message": "0.5"},
+    "llmSystemPrompt": {"message": "You are a professional Chinese content summarization assistant. Output must be HTML fragments suitable for innerHTML display."},
+    "enableSummarize": { "message": "Enable Summarize Full Page" },
+    "enableSummarizeTip": { "message": "Enable to use the summarize full page feature in the context menu. API Key and Endpoint are required." },
+    "summarizeFullPage": { "message": "Summarize Full Page" }
 }

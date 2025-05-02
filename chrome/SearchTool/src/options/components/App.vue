@@ -1,274 +1,356 @@
 <template>
   <el-form
     ref="form"
-    label-width="10px"
+    label-width="120px"
     size="mini"
     style="width: 100%; min-width: 1000px; min-height: 500px"
   >
-    <draggable
-      v-model:list="engines"
-      @end="onDragEnd"
-      handle=".handle"
-      item-key="id"
-      class="list-group"
-    >
-      <template #item="{ element }">
-        <el-form-item
-          label=""
-          :key="element.id"
-          :gutter="12"
-          class="engine-form-item"
-        >
-          <el-row :gutter="10" class="engine-row">
-            <el-col :xs="2" :sm="1">
-              <el-icon class="handle"><Rank /></el-icon>
-            </el-col>
-            <el-col :xs="12" :sm="6" :md="3">
-              <el-input
-                :placeholder="getMessage('searchEngine')"
-                v-model="element.name"
-                class="engine-input"
-              >
-              </el-input>
-            </el-col>
-            <el-col :xs="12" :sm="6" :md="4">
-              <el-tooltip
-                class="item"
-                effect="dark"
-                :content="getMessage('optionsInPopupTip')"
-                placement="top"
-              >
-                <el-switch
-                  v-model="element.inPopup"
-                  :active-text="getMessage('optionsInPopup')"
-                ></el-switch>
-              </el-tooltip>
-            </el-col>
-            <el-col :xs="12" :sm="6" :md="4">
-              <el-tooltip
-                class="item"
-                effect="dark"
-                :content="getMessage('inRightTip')"
-                placement="top"
-              >
-                <el-switch
-                  v-model="element.inRight"
-                  :active-text="getMessage('inRight')"
-                ></el-switch>
-              </el-tooltip>
-            </el-col>
-            <el-col :xs="12" :sm="6" :md="4">
-              <el-tooltip
-                class="item"
-                effect="dark"
-                :content="getMessage('inShortcutsTip')"
-                placement="top"
-              >
-                <el-switch
-                  v-model="element.inShortcuts"
-                  :active-text="getMessage('inShortcuts')"
-                ></el-switch>
-              </el-tooltip>
-            </el-col>
-            <el-col :xs="12" :sm="6" :md="4">
-              <el-tooltip
-                class="item"
-                effect="dark"
-                :content="getMessage('inTooltipTip')"
-                placement="top"
-              >
-                <el-switch
-                  v-model="element.inTooltip"
-                  :active-text="getMessage('inTooltip')"
-                ></el-switch>
-              </el-tooltip>
-            </el-col>
-          </el-row>
-          <el-row :gutter="16" class="engine-row">
-            <el-col :xs="24" :sm="12" :md="14">
-              <el-input
-                :placeholder="getMessage('searchUrl')"
-                v-model="element.url"
-                @input="changeSearchUrl(element)"
-                class="engine-url"
-              ></el-input>
-            </el-col>
-            <el-col :xs="24" :sm="8" :md="8">
-              <el-input
-                :placeholder="getMessage('searchIcon')"
-                v-model="element.icon"
-                class="engine-icon"
-              >
-                <template v-slot:append>
-                  <img :src="element.icon" alt="" height="20px" />
-                </template>
-              </el-input>
-            </el-col>
-            <el-col :xs="6" :sm="2" :md="2" style="min-width: 40px">
-              <el-button
-                type="danger"
-                @click="delItem(element.id)"
-                circle
-                style="margin-left: 4px"
-              >
-                <el-icon><Delete /></el-icon>
-              </el-button>
-            </el-col>
-            <el-col
-              :xs="6"
-              :sm="2"
-              :md="2"
-              v-if="element.id == engines.length"
-              style="min-width: 40px"
-            >
-              <el-button
-                type="info"
-                @click="addItem"
-                circle
-                style="margin-left: 4px"
-              >
-                <el-icon><Plus /></el-icon>
-              </el-button>
-            </el-col>
-          </el-row>
-        </el-form-item>
+    <!-- 搜索引擎配置区域 -->
+    <el-card shadow="never" style="margin-bottom: 24px;">
+      <template #header>
+        <span>{{ getMessage('searchEngine') || '搜索引擎配置' }}</span>
       </template>
-    </draggable>
+      <draggable
+        v-model:list="engines"
+        @end="onDragEnd"
+        handle=".handle"
+        item-key="id"
+        class="list-group"
+      >
+        <template #item="{ element }">
+          <el-form-item
+            label=""
+            :key="element.id"
+            :gutter="12"
+            class="engine-form-item"
+          >
+            <el-row :gutter="10" class="engine-row">
+              <el-col :xs="2" :sm="1">
+                <el-icon class="handle"><Rank /></el-icon>
+              </el-col>
+              <el-col :xs="12" :sm="6" :md="3">
+                <el-input
+                  :placeholder="getMessage('searchEngine')"
+                  v-model="element.name"
+                  class="engine-input"
+                >
+                </el-input>
+              </el-col>
+              <el-col :xs="12" :sm="6" :md="4">
+                <el-tooltip
+                  class="item"
+                  effect="dark"
+                  :content="getMessage('optionsInPopupTip')"
+                  placement="top"
+                >
+                  <el-switch
+                    v-model="element.inPopup"
+                    :active-text="getMessage('optionsInPopup')"
+                  ></el-switch>
+                </el-tooltip>
+              </el-col>
+              <el-col :xs="12" :sm="6" :md="4">
+                <el-tooltip
+                  class="item"
+                  effect="dark"
+                  :content="getMessage('inRightTip')"
+                  placement="top"
+                >
+                  <el-switch
+                    v-model="element.inRight"
+                    :active-text="getMessage('inRight')"
+                  ></el-switch>
+                </el-tooltip>
+              </el-col>
+              <el-col :xs="12" :sm="6" :md="4">
+                <el-tooltip
+                  class="item"
+                  effect="dark"
+                  :content="getMessage('inShortcutsTip')"
+                  placement="top"
+                >
+                  <el-switch
+                    v-model="element.inShortcuts"
+                    :active-text="getMessage('inShortcuts')"
+                  ></el-switch>
+                </el-tooltip>
+              </el-col>
+              <el-col :xs="12" :sm="6" :md="4">
+                <el-tooltip
+                  class="item"
+                  effect="dark"
+                  :content="getMessage('inTooltipTip')"
+                  placement="top"
+                >
+                  <el-switch
+                    v-model="element.inTooltip"
+                    :active-text="getMessage('inTooltip')"
+                  ></el-switch>
+                </el-tooltip>
+              </el-col>
+            </el-row>
+            <el-row :gutter="16" class="engine-row">
+              <el-col :xs="24" :sm="12" :md="14">
+                <el-input
+                  :placeholder="getMessage('searchUrl')"
+                  v-model="element.url"
+                  @input="changeSearchUrl(element)"
+                  class="engine-url"
+                ></el-input>
+              </el-col>
+              <el-col :xs="24" :sm="8" :md="8">
+                <el-input
+                  :placeholder="getMessage('searchIcon')"
+                  v-model="element.icon"
+                  class="engine-icon"
+                >
+                  <template v-slot:append>
+                    <img :src="element.icon" alt="" height="20px" />
+                  </template>
+                </el-input>
+              </el-col>
+              <el-col :xs="6" :sm="2" :md="2" style="min-width: 40px">
+                <el-button
+                  type="danger"
+                  @click="delItem(element.id)"
+                  circle
+                  style="margin-left: 4px"
+                >
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </el-col>
+              <el-col
+                :xs="6"
+                :sm="2"
+                :md="2"
+                v-if="element.id == engines.length"
+                style="min-width: 40px"
+              >
+                <el-button
+                  type="info"
+                  @click="addItem"
+                  circle
+                  style="margin-left: 4px"
+                >
+                  <el-icon><Plus /></el-icon>
+                </el-button>
+              </el-col>
+            </el-row>
+          </el-form-item>
+        </template>
+      </draggable>
+    </el-card>
 
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('select2clipboardTip')"
-        placement="top"
-      >
-        <el-switch
-          v-model="settings.select2clipboard"
-          :active-text="getMessage('select2clipboard')"
+    <!-- 常规设置区域 -->
+    <el-card shadow="never" style="margin-bottom: 24px;">
+      <template #header>
+        <span>{{ getMessage('generalSettings') || '常规设置' }}</span>
+      </template>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('select2clipboardTip')"
+          placement="top"
         >
-        </el-switch>
-      </el-tooltip>
-    </el-form-item>
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('showTooltipTip')"
-        placement="top"
-      >
-        <el-switch
-          v-model="settings.showTooltip"
-          :active-text="getMessage('showTooltip')"
-        ></el-switch>
-      </el-tooltip>
-    </el-form-item>
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('showTopSearchSwitchTip')"
-        placement="top"
-      >
-        <el-switch
-          v-model="settings.showTopSearchSwitch"
-          :active-text="getMessage('showTopSearchSwitch')"
-        ></el-switch>
-      </el-tooltip>
-    </el-form-item>
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('searchInNewTabTip')"
-        placement="top"
-      >
-        <el-switch
-          v-model="settings.searchInNewTab"
-          :active-text="getMessage('searchInNewTab')"
-        ></el-switch>
-      </el-tooltip>
-    </el-form-item>
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('popupSuggestEnabledTip')"
-        placement="top"
-      >
-        <el-switch
-          v-model="settings.popupSuggestEnabled"
-          :active-text="getMessage('popupSuggestEnabled')"
-        ></el-switch>
-      </el-tooltip>
-    </el-form-item>
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('popupSuggestEngineTip')"
-        placement="top"
-      >
-        <el-select v-model="settings.popupSuggestEngine" style="width: 120px">
-          <el-option label="Bing" value="bing"></el-option>
-          <el-option label="Google" value="google"></el-option>
-        </el-select>
-        <span style="margin-left: 8px">{{
-          getMessage("popupSuggestEngine")
-        }}</span>
-      </el-tooltip>
-    </el-form-item>
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('popupHistoryEnabledTip')"
-        placement="top"
-      >
-        <el-switch
-          v-model="settings.popupHistoryEnabled"
-          :active-text="getMessage('popupHistoryEnabled')"
-        ></el-switch>
-      </el-tooltip>
-    </el-form-item>
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('popupHistoryDaysTip')"
-        placement="top"
-      >
+          <el-switch
+            v-model="settings.select2clipboard"
+            :active-text="getMessage('select2clipboard')"
+          >
+          </el-switch>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('showTooltipTip')"
+          placement="top"
+        >
+          <el-switch
+            v-model="settings.showTooltip"
+            :active-text="getMessage('showTooltip')"
+          ></el-switch>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('showTopSearchSwitchTip')"
+          placement="top"
+        >
+          <el-switch
+            v-model="settings.showTopSearchSwitch"
+            :active-text="getMessage('showTopSearchSwitch')"
+          ></el-switch>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('searchInNewTabTip')"
+          placement="top"
+        >
+          <el-switch
+            v-model="settings.searchInNewTab"
+            :active-text="getMessage('searchInNewTab')"
+          ></el-switch>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('popupSuggestEnabledTip')"
+          placement="top"
+        >
+          <el-switch
+            v-model="settings.popupSuggestEnabled"
+            :active-text="getMessage('popupSuggestEnabled')"
+          ></el-switch>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('popupSuggestEngineTip')"
+          placement="top"
+        >
+          <el-select v-model="settings.popupSuggestEngine" style="width: 120px">
+            <el-option label="Bing" value="bing"></el-option>
+            <el-option label="Google" value="google"></el-option>
+          </el-select>
+          <span style="margin-left: 8px">{{
+            getMessage("popupSuggestEngine")
+          }}</span>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('popupHistoryEnabledTip')"
+          placement="top"
+        >
+          <el-switch
+            v-model="settings.popupHistoryEnabled"
+            :active-text="getMessage('popupHistoryEnabled')"
+          ></el-switch>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('popupHistoryDaysTip')"
+          placement="top"
+        >
+          <el-input-number
+            v-model="settings.popupHistoryDays"
+            :min="1"
+            :max="365"
+            :step="1"
+            style="width: 120px"
+          ></el-input-number>
+          <span style="margin-left: 8px">{{
+            getMessage("popupHistoryDays")
+          }}</span>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        {{ getMessage("themeColorTip") }}:
+        <el-color-picker
+          v-model="settings.themeColor"
+          show-alpha
+          :predefine="predefineColors"
+        >
+        </el-color-picker>
+      </el-form-item>
+      <el-form-item label="">
+        {{ getMessage("textColorTip") }}:
+        <el-color-picker
+          v-model="settings.textColor"
+          show-alpha
+          :predefine="predefineColors"
+        >
+        </el-color-picker>
+      </el-form-item>
+    </el-card>
+
+    <!-- LLM 配置区域 -->
+    <el-card shadow="never" style="margin-bottom: 24px;">
+      <template #header>
+        <span>{{ getMessage('llmSettings') || '大模型（LLM）配置' }}</span>
+      </template>
+      <el-form-item :label="getMessage('enableSummarize') || '启用总结全文'">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('enableSummarizeTip') || '是否启用总结全文'"
+          placement="top"
+        >
+          <el-switch
+            v-model="llmConfig.enableSummarize"
+            :active-text="getMessage('enableSummarize') || '启用总结全文'"
+          ></el-switch>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item :label="'LLM API Key'">
+        <el-input
+          v-model="llmConfig.apiKey"
+          placeholder="API Key"
+          style="width: 400px"
+        ></el-input>
+      </el-form-item>
+      <el-form-item :label="'LLM Endpoint'">
+        <el-input
+          v-model="llmConfig.endpoint"
+          placeholder="Endpoint, e.g. https://my-ai.openai.azure.com/openai/deployments/my-gpt-4.1/chat/completions?api-version=2024-02-15-preview"
+          style="width: 600px"
+        ></el-input>
+      </el-form-item>
+      <el-form-item :label="'LLM Prompt'">
+        <el-input
+          v-model="llmConfig.prompt"
+          :placeholder="getMessage('llmPrompt')"
+          type="textarea"
+          :rows="2"
+          style="width: 600px"
+        ></el-input>
+      </el-form-item>
+      <el-form-item :label="'LLM System Prompt'">
+        <el-input
+          v-model="llmConfig.systemPrompt"
+          :placeholder="getMessage('llmSystemPrompt')"
+          type="textarea"
+          :rows="2"
+          style="width: 600px"
+        ></el-input>
+      </el-form-item>
+      <el-form-item :label="'LLM Max Tokens'">
         <el-input-number
-          v-model="settings.popupHistoryDays"
-          :min="1"
-          :max="365"
-          :step="1"
+          v-model="llmConfig.max_tokens"
+          :min="128"
+          :max="32768"
+          :step="128"
+          style="width: 200px"
+        ></el-input-number>
+      </el-form-item>
+      <el-form-item :label="'LLM Temperature'">
+        <el-input-number
+          v-model="llmConfig.temperature"
+          :min="0"
+          :max="2"
+          :step="0.1"
           style="width: 120px"
         ></el-input-number>
-        <span style="margin-left: 8px">{{
-          getMessage("popupHistoryDays")
-        }}</span>
-      </el-tooltip>
-    </el-form-item>
+      </el-form-item>
+    </el-card>
 
-    <el-form-item label="">
-      {{ getMessage("themeColorTip") }}:
-      <el-color-picker
-        v-model="settings.themeColor"
-        show-alpha
-        :predefine="predefineColors"
-      >
-      </el-color-picker>
-    </el-form-item>
-    <el-form-item label="">
-      {{ getMessage("textColorTip") }}:
-      <el-color-picker
-        v-model="settings.textColor"
-        show-alpha
-        :predefine="predefineColors"
-      >
-      </el-color-picker>
-    </el-form-item>
-
+    <!-- 操作按钮区域 -->
     <el-form-item>
       <el-button type="danger" @click="reset">{{
         getMessage("reset")
@@ -323,6 +405,15 @@ export default defineComponent({
                 popupHistoryEnabled: true,
                 popupHistoryDays: 90,
             },
+            llmConfig: {
+                enableSummarize: false,
+                apiKey: "",
+                endpoint: "",
+                prompt: "",
+                max_tokens: 32000,
+                temperature: 0.5,
+                systemPrompt: ""
+            },
             predefineColors: [
                 '#FFFFFF',
                 '#ff4500',
@@ -357,6 +448,13 @@ export default defineComponent({
                 popupSuggestEngine: 'bing',
                 popupHistoryEnabled: true,
                 popupHistoryDays: 90,
+                llmEnableSummarize: false,
+                llmApiKey: "",
+                llmEndpoint: "",
+                llmPrompt: this.getMessage('llmPrompt'),
+                llmMaxTokens: this.getMessage('llmMaxTokens'),
+                llmTemperature: this.getMessage('llmTemperature'),
+                llmSystemPrompt: this.getMessage('llmSystemPrompt'),
             }; // 默认配置
             let that = this;
             console.log("[options] init defaultConfig:", defaultConfig);
@@ -381,6 +479,13 @@ export default defineComponent({
                     that.settings.popupSuggestEngine = items.popupSuggestEngine;
                     that.settings.popupHistoryEnabled = items.popupHistoryEnabled;
                     that.settings.popupHistoryDays = items.popupHistoryDays;
+                    that.llmConfig.enableSummarize = items.llmEnableSummarize || false;
+                    that.llmConfig.apiKey = items.llmApiKey || "";
+                    that.llmConfig.endpoint = items.llmEndpoint || "";
+                    that.llmConfig.prompt = items.llmPrompt || "";
+                    that.llmConfig.max_tokens = parseInt(items.llmMaxTokens) || 32000;
+                    that.llmConfig.temperature = parseFloat(items.llmTemperature) || 0.5;
+                    that.llmConfig.systemPrompt = items.llmSystemPrompt || "";
                     console.log("[options] loaded engines:", that.engines);
                     console.log("[options] loaded settings:", that.settings);
                 });
@@ -441,25 +546,42 @@ export default defineComponent({
             });
             // 先存 iconData 到 local
             let localIconData = {};
+            // 先获取已有的iconData，避免重复下载和保存
+            const localItems = await new Promise(resolve => {
+                chrome.storage.local.get(null, resolve);
+            });
             for (let engine of this.engines) {
-                if (engine.icon && !engine.icon.startsWith('data:')) {
+                // 检查是否已存在 iconData
+                let iconKeyByName = engine.name ? 'iconData_' + engine.name : null;
+                let iconKeyByIcon = engine.icon ? 'iconData_' + engine.icon : null;
+                let alreadyExists = false;
+                if (iconKeyByIcon && localItems[iconKeyByIcon]) {
+                    engine.iconData = localItems[iconKeyByIcon];
+                    alreadyExists = true;
+                } else if (iconKeyByName && localItems[iconKeyByName]) {
+                    engine.iconData = localItems[iconKeyByName];
+                    alreadyExists = true;
+                }
+                if (!alreadyExists && engine.icon && !engine.icon.startsWith('data:')) {
                     engine.iconData = await this.fetchIconData(engine.icon);
-                } else if (engine.icon && engine.icon.startsWith('data:')) {
+                } else if (!alreadyExists && engine.icon && engine.icon.startsWith('data:')) {
                     engine.iconData = engine.icon;
                 }
+                // 只保存新的iconData
                 if (engine.iconData) {
-                    // 使用 engine.name 作为 key
-                    if (engine.name) {
-                        localIconData['iconData_' + engine.name] = engine.iconData;
+                    if (iconKeyByName && !localItems[iconKeyByName]) {
+                        localIconData[iconKeyByName] = engine.iconData;
                     }
-                    if (engine.icon) {
-                        localIconData['iconData_' + engine.icon] = engine.iconData;
+                    if (iconKeyByIcon && !localItems[iconKeyByIcon]) {
+                        localIconData[iconKeyByIcon] = engine.iconData;
                     }
                 }
             }
-            chrome.storage.local.set(localIconData, function() {
-                console.log("[options] chrome.storage.local.set iconData:", localIconData);
-            });
+            if (Object.keys(localIconData).length > 0) {
+                chrome.storage.local.set(localIconData, function() {
+                    console.log("[options] chrome.storage.local.set iconData:", localIconData);
+                });
+            }
             // sync 只存元数据
             const enginesMeta = this.engines.map(({iconData, ...rest}) => rest);
             const saveObj = {
@@ -474,6 +596,13 @@ export default defineComponent({
                 popupSuggestEngine: this.settings.popupSuggestEngine,
                 popupHistoryEnabled: this.settings.popupHistoryEnabled,
                 popupHistoryDays: this.settings.popupHistoryDays,
+                llmEnableSummarize: this.llmConfig.enableSummarize,
+                llmApiKey: this.llmConfig.apiKey,
+                llmEndpoint: this.llmConfig.endpoint,
+                llmPrompt: this.llmConfig.prompt,
+                llmMaxTokens: this.llmConfig.max_tokens,
+                llmTemperature: this.llmConfig.temperature,
+                llmSystemPrompt: this.llmConfig.systemPrompt,
             };
             console.log("[options] onSubmit saveObj:", saveObj);
             chrome.runtime.sendMessage(enginesMeta, function (response) {
@@ -506,7 +635,8 @@ export default defineComponent({
                 });
                 const data = {
                     engines: enginesWithIcon,
-                    settings: this.settings
+                    settings: this.settings,
+                    llmConfig: this.llmConfig
                 };
                 const json = JSON.stringify(data, null, 2);
                 const blob = new Blob([json], { type: "application/json" });
@@ -531,6 +661,9 @@ export default defineComponent({
                         this.settings = Object.assign(this.settings, data.settings);
                         if (!this.settings.textColor) {
                             this.settings.textColor = '#202124';
+                        }
+                        if (data.llmConfig) {
+                            this.llmConfig = Object.assign(this.llmConfig, data.llmConfig);
                         }
                         // 导入 iconData 到 local
                         let localIconData = {};
@@ -627,7 +760,7 @@ export default defineComponent({
 
     computed: {
         newForm() {
-            return JSON.parse(JSON.stringify([this.engines, this.settings]))
+            return JSON.parse(JSON.stringify([this.engines, this.settings, this.llmConfig]));
         }
     },
 

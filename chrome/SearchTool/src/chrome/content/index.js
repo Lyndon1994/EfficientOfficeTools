@@ -232,3 +232,133 @@ function parseUrl(url) {
   });
   return obj;
 }
+
+console.debug("[ContentScript] content script loaded");
+
+// 监听 background script 消息
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+  console.debug("[ContentScript] onMessage", request);
+  if (request.action === "getPageContent") {
+    // 返回页面正文内容
+    sendResponse({ content: document.body ? document.body.innerText : document.documentElement.innerText });
+    return true;
+  }
+  if (request.action === "showSummaryDialog") {
+    showSummaryDialog(request.summary);
+    return true;
+  }
+});
+
+// 简单弹窗显示总结内容
+function showSummaryDialog(summary) {
+  // 移除已存在的弹窗
+  let old = document.getElementById("addon_summary_dialog");
+  if (old) old.remove();
+
+  // 保留全文 summary 内容
+  let summaryContent = summary;
+
+  // 新增：保存最初网页正文内容
+  let pageContent = "";
+  // 尝试获取正文内容
+  if (document.body) {
+    pageContent = document.body.innerText || "";
+  } else if (document.documentElement) {
+    pageContent = document.documentElement.innerText || "";
+  }
+
+  // 仅保存对话历史（不含 summary/网页内容）
+  let chatHistory = [];
+
+  // summary 直接作为 HTML 展示
+  let dialog = document.createElement("div");
+  dialog.id = "addon_summary_dialog";
+  dialog.style.position = "fixed";
+  dialog.style.top = "10%";
+  dialog.style.left = "50%";
+  dialog.style.transform = "translateX(-50%)";
+  dialog.style.background = "#fff";
+  dialog.style.color = "#222";
+  dialog.style.padding = "24px 32px";
+  dialog.style.border = "1px solid #888";
+  dialog.style.borderRadius = "8px";
+  dialog.style.zIndex = 999999999;
+  dialog.style.boxShadow = "0 4px 24px rgba(0,0,0,0.15)";
+  dialog.style.maxWidth = "600px";
+  dialog.style.maxHeight = "60vh";
+  dialog.style.overflowY = "auto";
+  dialog.innerHTML = `
+    <div style="font-weight:bold;margin-bottom:8px;">总结全文</div>
+    <div style="white-space:normal;" id="addon_summary_dialog_content">${summaryContent}</div>
+    <div id="addon_summary_dialog_chat" style="margin-top:16px;"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <input id="addon_summary_dialog_input" type="text" style="flex:1;padding:4px 8px;" placeholder="继续提问...">
+      <button id="addon_summary_dialog_send" style="padding:4px 16px;">发送</button>
+      <button id="addon_summary_dialog_close" style="padding:4px 16px;">关闭</button>
+    </div>
+  `;
+  document.body.appendChild(dialog);
+
+  // 关闭按钮
+  document.getElementById("addon_summary_dialog_close").onclick = function () {
+    dialog.remove();
+  };
+
+  // 发送按钮
+  document.getElementById("addon_summary_dialog_send").onclick = sendUserMessage;
+  document.getElementById("addon_summary_dialog_input").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") sendUserMessage();
+  });
+
+  function appendMessage(role, content) {
+    const chatDiv = document.getElementById("addon_summary_dialog_chat");
+    const msgDiv = document.createElement("div");
+    // 国际化处理：你/助手
+    let roleLabel = "";
+    if (role === "user") {
+      roleLabel = chrome.i18n.getMessage("llmUserLabel") || "🧑";
+    } else {
+      roleLabel = chrome.i18n.getMessage("llmAssistantLabel") || "🤖";
+    }
+    msgDiv.style.margin = "8px 0";
+    msgDiv.innerHTML = `<b>${roleLabel}:</b> <span>${content}</span>`;
+    chatDiv.appendChild(msgDiv);
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+  }
+
+  function sendUserMessage() {
+    const input = document.getElementById("addon_summary_dialog_input");
+    const question = input.value.trim();
+    if (!question) return;
+    appendMessage("user", question);
+    // 构造完整 history，始终以网页内容为第一条
+    const history = [
+      { role: "system", content: chrome.i18n.getMessage("llmPageContentPrefix") + (pageContent || "") },
+      { role: "assistant", content: summaryContent },
+      ...chatHistory,
+      { role: "user", content: question }
+    ];
+    input.value = "";
+    // 显示loading
+    appendMessage("assistant", chrome.i18n.getMessage("llmThinking") || "思考中...");
+    // 发送到background
+    chrome.runtime.sendMessage(
+      { action: "chatWithLLM", history },
+      function(response) {
+        // 移除最后一个"思考中..."消息
+        const chatDiv = document.getElementById("addon_summary_dialog_chat");
+        if (chatDiv.lastChild && chatDiv.lastChild.innerText.includes(chrome.i18n.getMessage("llmThinking") || "思考中")) {
+          chatDiv.removeChild(chatDiv.lastChild);
+        }
+        if (response && response.reply) {
+          appendMessage("assistant", response.reply);
+          // 只保存用户和助手的对话，不保存 summaryContent 或 pageContent
+          chatHistory.push({ role: "user", content: question });
+          chatHistory.push({ role: "assistant", content: response.reply });
+        } else {
+          appendMessage("assistant", chrome.i18n.getMessage("llmChatFailed") || "对话失败，请重试。");
+        }
+      }
+    );
+  }
+}

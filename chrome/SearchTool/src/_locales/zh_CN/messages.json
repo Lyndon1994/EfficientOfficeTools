@@ -10,6 +10,8 @@
     "inShortcuts": {"message": "快捷切换"},
     "inShortcutsTip": {"message": "选中后将支持快捷键在搜索引擎中切换，比如在百度搜索页面，按下快捷键，快速切换为Google搜索"},
     "searchEngine": {"message": "搜索引擎"},
+    "generalSettings": {"message": "常规设置"},
+    "llmSettings": {"message": "大模型（LLM）配置"},
     "searchUrl": {"message": "查询地址，%s替代检索词"},
     "searchIcon": {"message": "icon url"},
     "save": {"message": "保存"},
@@ -58,5 +60,14 @@
     "popupHistoryEnabled": {"message": "启用历史和收藏夹匹配"},
     "popupHistoryEnabledTip": {"message": "是否在popup页面启用历史记录和收藏夹匹配"},
     "popupHistoryDays": {"message": "历史匹配天数"},
-    "popupHistoryDaysTip": {"message": "popup页面匹配历史记录的默认天数"}
+    "popupHistoryDaysTip": {"message": "popup页面匹配历史记录的默认天数"},
+    "llmApiKey": {"message": ""},
+    "llmEndpoint": {"message": ""},
+    "llmPrompt": {"message": "请用HTML格式总结以下网页内容，内容要有条理、分点、可直接用于innerHTML展示：\n%s"},
+    "llmMaxTokens": {"message": "32000"},
+    "llmTemperature": {"message": "0.5"},
+    "llmSystemPrompt": {"message": "你是一个专业的中文内容总结助手，输出内容必须是可直接用于innerHTML展示的HTML片段。"},
+    "enableSummarize": { "message": "启用总结全文" },
+    "enableSummarizeTip": { "message": "开启后可在右键菜单中使用总结全文功能，需配置API Key和Endpoint" },
+    "summarizeFullPage": { "message": "总结全文" }
 }
