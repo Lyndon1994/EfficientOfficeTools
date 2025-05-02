@@ -1,4 +1,35 @@
 <template>
+  <!-- 新增说明区域 -->
+  <div class="info-section" style="margin-bottom: 24px;">
+    <el-card shadow="never">
+      <template #header>
+        <span>{{ getMessage('readmeTitle') || 'Read Me' }}</span>
+      </template>
+      <div v-html="getMessage('readme')"></div>
+      <div style="margin-top: 16px;">
+        <strong>{{ getMessage('welcomeContributeTitle') || 'Welcome to contribute:' }}</strong>
+        <span>
+          {{ getMessage('welcomeContribute') }}
+          <a href="https://github.com/Lyndon1994/EfficientOfficeTools/tree/main/chrome/SearchTool" target="_blank">
+            {{ getMessage('welcomeContributeLink') || 'Click here.' }}
+          </a> 😊
+        </span>
+      </div>
+      <div style="margin-top: 16px;">
+        <strong>{{ getMessage('llmConfigDocTitle') || 'LLM 配置说明：' }}</strong>
+        <ul>
+          <li>{{ getMessage('llmConfigApiKey') || 'API Key: 你的大模型服务密钥。' }}</li>
+          <li>{{ getMessage('llmConfigEndpoint') || 'Endpoint: LLM 接口地址，例如 https://my-ai.openai.azure.com/openai/deployments/my-gpt-4.1/chat/completions?api-version=2024-02-15-preview' }}</li>
+          <li>{{ getMessage('llmConfigPrompt') || 'Prompt: 用户输入的提示词模板，支持 {content} 占位符。' }}</li>
+          <li>{{ getMessage('llmConfigSystemPrompt') || 'System Prompt: 系统级提示词，影响模型行为。' }}</li>
+          <li>{{ getMessage('llmConfigMaxTokens') || 'Max Tokens: 返回内容最大长度。' }}</li>
+          <li>{{ getMessage('llmConfigTemperature') || 'Temperature: 采样温度，越高越随机。' }}</li>
+          <li>{{ getMessage('llmConfigMenus') || '菜单可自定义多组 prompt，方便快速切换。' }}</li>
+        </ul>
+      </div>
+    </el-card>
+  </div>
+
   <el-form
     ref="form"
     label-width="120px"
@@ -285,7 +316,42 @@
       <template #header>
         <span>{{ getMessage('llmSettings') || '大模型（LLM）配置' }}</span>
       </template>
-      <el-form-item :label="getMessage('enableSummarize') || '启用总结全文'">
+      <el-form-item :label="'API Key'">
+        <el-input
+          v-model="llmConfig.apiKey"
+          placeholder="API Key"
+          style="width: 400px"
+        ></el-input>
+      </el-form-item>
+      <el-form-item :label="'Endpoint'">
+        <el-input
+          v-model="llmConfig.endpoint"
+          placeholder="Endpoint, e.g. https://my-ai.openai.azure.com/openai/deployments/my-gpt-4.1/chat/completions?api-version=2024-02-15-preview"
+          style="width: 600px"
+        ></el-input>
+      </el-form-item>
+      <el-form-item :label="'Max Tokens'">
+        <el-input-number
+          v-model="llmConfig.max_tokens"
+          :min="128"
+          :max="32768"
+          :step="128"
+          style="width: 200px"
+        ></el-input-number>
+      </el-form-item>
+      <el-form-item :label="'Temperature'">
+        <el-input-number
+          v-model="llmConfig.temperature"
+          :min="0"
+          :max="2"
+          :step="0.1"
+          style="width: 120px"
+        ></el-input-number>
+      </el-form-item>
+
+      <el-divider></el-divider>
+      
+      <el-form-item>
         <el-tooltip
           class="item"
           effect="dark"
@@ -298,21 +364,8 @@
           ></el-switch>
         </el-tooltip>
       </el-form-item>
-      <el-form-item :label="'LLM API Key'">
-        <el-input
-          v-model="llmConfig.apiKey"
-          placeholder="API Key"
-          style="width: 400px"
-        ></el-input>
-      </el-form-item>
-      <el-form-item :label="'LLM Endpoint'">
-        <el-input
-          v-model="llmConfig.endpoint"
-          placeholder="Endpoint, e.g. https://my-ai.openai.azure.com/openai/deployments/my-gpt-4.1/chat/completions?api-version=2024-02-15-preview"
-          style="width: 600px"
-        ></el-input>
-      </el-form-item>
-      <el-form-item :label="'LLM Prompt'">
+
+      <el-form-item :label="'Prompt'">
         <el-input
           v-model="llmConfig.prompt"
           :placeholder="getMessage('llmPrompt')"
@@ -321,7 +374,7 @@
           style="width: 600px"
         ></el-input>
       </el-form-item>
-      <el-form-item :label="'LLM System Prompt'">
+      <el-form-item :label="'System Prompt'">
         <el-input
           v-model="llmConfig.systemPrompt"
           :placeholder="getMessage('llmSystemPrompt')"
@@ -330,23 +383,50 @@
           style="width: 600px"
         ></el-input>
       </el-form-item>
-      <el-form-item :label="'LLM Max Tokens'">
-        <el-input-number
-          v-model="llmConfig.max_tokens"
-          :min="128"
-          :max="32768"
-          :step="128"
-          style="width: 200px"
-        ></el-input-number>
-      </el-form-item>
-      <el-form-item :label="'LLM Temperature'">
-        <el-input-number
-          v-model="llmConfig.temperature"
-          :min="0"
-          :max="2"
-          :step="0.1"
-          style="width: 120px"
-        ></el-input-number>
+      <el-divider></el-divider>
+      
+      <el-form-item :label="'Ask LLM'">
+        <draggable
+          v-model:list="llmChatMenus"
+          handle=".llm-menu-handle"
+          item-key="id"
+          class="list-group"
+        >
+          <template #item="{ element }">
+            <el-row :gutter="8" align="middle" style="margin-bottom: 8px;">
+              <el-col :span="1">
+                <el-icon class="llm-menu-handle" style="cursor:move;"><Rank /></el-icon>
+              </el-col>
+              <el-col :span="4">
+                <el-input v-model="element.name" placeholder="Name"></el-input>
+              </el-col>
+              <el-col :span="6">
+                <el-input v-model="element.prompt" placeholder="Prompt, use {content}"></el-input>
+              </el-col>
+              <el-col :span="8">
+                <el-input v-model="element.systemPrompt" placeholder="System Prompt"></el-input>
+              </el-col>
+              <el-col :span="2">
+                <el-button
+                  type="danger"
+                  @click="delChatMenu(element.id)"
+                  circle
+                  style="margin-left: 4px"
+                >
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </el-col>
+            </el-row>
+          </template>
+        </draggable>
+        <el-button
+          type="info"
+          @click="addChatMenu"
+          circle
+          style="margin-left: 4px"
+        >
+          <el-icon><Plus /></el-icon>
+        </el-button>
       </el-form-item>
     </el-card>
 
@@ -414,6 +494,9 @@ export default defineComponent({
                 temperature: 0.5,
                 systemPrompt: ""
             },
+            llmChatMenus: [
+                // { id: 1, name: "对话助手", prompt: "请用中文简要回答：{content}", systemPrompt: "", max_tokens: 2048, temperature: 0.5 }
+            ],
             predefineColors: [
                 '#FFFFFF',
                 '#ff4500',
@@ -455,6 +538,7 @@ export default defineComponent({
                 llmMaxTokens: this.getMessage('llmMaxTokens'),
                 llmTemperature: this.getMessage('llmTemperature'),
                 llmSystemPrompt: this.getMessage('llmSystemPrompt'),
+                llmChatMenus: [],
             }; // 默认配置
             let that = this;
             console.log("[options] init defaultConfig:", defaultConfig);
@@ -464,8 +548,8 @@ export default defineComponent({
                 // 先从 local 取 iconData
                 chrome.storage.local.get(null, function(localItems) {
                     engines.forEach(engine => {
-                        if (localItems && localItems['iconData_' + engine.id]) {
-                            engine.iconData = localItems['iconData_' + engine.id];
+                        if (localItems && localItems['iconData_' + engine.name]) {
+                            engine.iconData = localItems['iconData_' + engine.name];
                         }
                     });
                     that.engines = engines;
@@ -486,12 +570,18 @@ export default defineComponent({
                     that.llmConfig.max_tokens = parseInt(items.llmMaxTokens) || 32000;
                     that.llmConfig.temperature = parseFloat(items.llmTemperature) || 0.5;
                     that.llmConfig.systemPrompt = items.llmSystemPrompt || "";
+                    let loadedMenus = Array.isArray(items.llmChatMenus) ? items.llmChatMenus : [];
+                    that.llmChatMenus = loadedMenus.map((menu, idx) => ({
+                        id: typeof menu.id !== 'undefined' ? menu.id : idx + 1,
+                        name: menu.name || "",
+                        prompt: menu.prompt || "",
+                        systemPrompt: menu.systemPrompt || ""
+                    }));
                     console.log("[options] loaded engines:", that.engines);
                     console.log("[options] loaded settings:", that.settings);
                 });
                 return true;
             });
-            this.openReadme();
         },
         onDragEnd(evt) {
             console.log(this.engines, "form.engines");
@@ -551,14 +641,10 @@ export default defineComponent({
                 chrome.storage.local.get(null, resolve);
             });
             for (let engine of this.engines) {
-                // 检查是否已存在 iconData
+                // 只用 name 做 key
                 let iconKeyByName = engine.name ? 'iconData_' + engine.name : null;
-                let iconKeyByIcon = engine.icon ? 'iconData_' + engine.icon : null;
                 let alreadyExists = false;
-                if (iconKeyByIcon && localItems[iconKeyByIcon]) {
-                    engine.iconData = localItems[iconKeyByIcon];
-                    alreadyExists = true;
-                } else if (iconKeyByName && localItems[iconKeyByName]) {
+                if (iconKeyByName && localItems[iconKeyByName]) {
                     engine.iconData = localItems[iconKeyByName];
                     alreadyExists = true;
                 }
@@ -571,9 +657,6 @@ export default defineComponent({
                 if (engine.iconData) {
                     if (iconKeyByName && !localItems[iconKeyByName]) {
                         localIconData[iconKeyByName] = engine.iconData;
-                    }
-                    if (iconKeyByIcon && !localItems[iconKeyByIcon]) {
-                        localIconData[iconKeyByIcon] = engine.iconData;
                     }
                 }
             }
@@ -603,6 +686,12 @@ export default defineComponent({
                 llmMaxTokens: this.llmConfig.max_tokens,
                 llmTemperature: this.llmConfig.temperature,
                 llmSystemPrompt: this.llmConfig.systemPrompt,
+                llmChatMenus: this.llmChatMenus.map(menu => ({
+                    id: menu.id,
+                    name: menu.name,
+                    prompt: menu.prompt,
+                    systemPrompt: menu.systemPrompt
+                })),
             };
             console.log("[options] onSubmit saveObj:", saveObj);
             chrome.runtime.sendMessage(enginesMeta, function (response) {
@@ -626,17 +715,20 @@ export default defineComponent({
             // 导出时合并 iconData
             chrome.storage.local.get(null, (localItems) => {
                 const enginesWithIcon = this.engines.map(engine => {
-                    // 优先用 iconData_{icon}，再用 iconData_{name}
-                    let iconData = engine.icon ? localItems['iconData_' + engine.icon] : undefined;
-                    if (!iconData && engine.name) {
-                        iconData = localItems['iconData_' + engine.name];
-                    }
+                    // 只用 iconData_{name}
+                    let iconData = engine.name ? localItems['iconData_' + engine.name] : undefined;
                     return {...engine, iconData};
                 });
                 const data = {
                     engines: enginesWithIcon,
                     settings: this.settings,
-                    llmConfig: this.llmConfig
+                    llmConfig: this.llmConfig,
+                    llmChatMenus: this.llmChatMenus.map(menu => ({
+                        id: menu.id,
+                        name: menu.name,
+                        prompt: menu.prompt,
+                        systemPrompt: menu.systemPrompt
+                    }))
                 };
                 const json = JSON.stringify(data, null, 2);
                 const blob = new Blob([json], { type: "application/json" });
@@ -665,16 +757,19 @@ export default defineComponent({
                         if (data.llmConfig) {
                             this.llmConfig = Object.assign(this.llmConfig, data.llmConfig);
                         }
+                        if (Array.isArray(data.llmChatMenus)) {
+                            this.llmChatMenus = data.llmChatMenus.map((menu, idx) => ({
+                                id: typeof menu.id !== 'undefined' ? menu.id : idx + 1,
+                                name: menu.name || "",
+                                prompt: menu.prompt || "",
+                                systemPrompt: menu.systemPrompt || ""
+                            }));
+                        }
                         // 导入 iconData 到 local
                         let localIconData = {};
                         this.engines.forEach(engine => {
-                            if (engine.iconData) {
-                                if (engine.name) {
-                                    localIconData['iconData_' + engine.name] = engine.iconData;
-                                }
-                                if (engine.icon) {
-                                    localIconData['iconData_' + engine.icon] = engine.iconData;
-                                }
+                            if (engine.iconData && engine.name) {
+                                localIconData['iconData_' + engine.name] = engine.iconData;
                             }
                         });
                         chrome.storage.local.set(localIconData, function() {
@@ -692,6 +787,17 @@ export default defineComponent({
             };
             reader.readAsText(file);
             return false;
+        },
+        addChatMenu() {
+            this.llmChatMenus.push({
+                id: this.llmChatMenus.length > 0 ? Math.max(...this.llmChatMenus.map(m => m.id)) + 1 : 1,
+                name: "",
+                prompt: "",
+                systemPrompt: ""
+            });
+        },
+        delChatMenu(id) {
+            this.llmChatMenus = this.llmChatMenus.filter(menu => menu.id !== id);
         },
         reset() {
             let that = this;
@@ -716,42 +822,17 @@ export default defineComponent({
             });
         },
         getMessage(key) {
-            return chrome.i18n.getMessage(key);
+            // 兼容 i18n 未配置 fallback
+            return chrome.i18n.getMessage(key) || '';
         },
         autosave: debounce(function (val, old) {
             if (JSON.stringify(val) != JSON.stringify(old)) {
                 this.onSubmit();
                 if (!this.openHiTip) {
-                    this.openHi();
                     this.openHiTip = true;
                 }
             }
         }, 1000),
-        openHi() {
-            this.$notify({
-                title: 'Hi',
-                dangerouslyUseHTMLString: true,
-                message: this.getMessage('comment'),
-                duration: 0
-            });
-        },
-        openReadme() {
-            this.$notify({
-                title: 'Read Me',
-                dangerouslyUseHTMLString: true,
-                message: this.getMessage('readme'),
-                duration: 0
-            });
-            let that = this;
-            setTimeout(function(){ 
-                that.$notify({
-                    title: 'Welcome to contribute',
-                    dangerouslyUseHTMLString: true,
-                    message: "You are more than welcome to contribute code to improve the tool. <a href='https://github.com/Lyndon1994/EfficientOfficeTools/tree/main/chrome/SearchTool'>Click here.</a> 😊",
-                    duration: 0
-                });
-            }, 3000);
-        }
     },
 
     created() {
@@ -760,7 +841,7 @@ export default defineComponent({
 
     computed: {
         newForm() {
-            return JSON.parse(JSON.stringify([this.engines, this.settings, this.llmConfig]));
+            return JSON.parse(JSON.stringify([this.engines, this.settings, this.llmConfig, this.llmChatMenus]));
         }
     },
 
@@ -844,5 +925,10 @@ export default defineComponent({
 
 .handle {
   cursor: move;
+}
+
+.info-section {
+  max-width: 1100px;
+  margin: 0 auto 24px auto;
 }
 </style>

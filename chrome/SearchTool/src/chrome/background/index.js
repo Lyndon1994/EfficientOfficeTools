@@ -8,6 +8,30 @@ function parseUrl(url) {
 }
 
 chrome.contextMenus.onClicked.addListener(function (info, tab) {
+  // 1. 对话大模型菜单
+  if (info.menuItemId && info.menuItemId.startsWith("llm_chat_menu_")) {
+    const idx = parseInt(info.menuItemId.replace("llm_chat_menu_", ""));
+    chrome.storage.sync.get({ llmChatMenus: [] }, function(items) {
+      const menus = Array.isArray(items.llmChatMenus) ? items.llmChatMenus : [];
+      const menu = menus[idx];
+      if (!menu) return;
+      const prompt = (menu.prompt || "").replace("{content}", info.selectionText || "");
+      const systemPrompt = menu.systemPrompt || "";
+      // 发送消息到 content script，弹出对话框
+      chrome.tabs.sendMessage(tab.id, {
+        action: "showLLMChatDialog",
+        menu: {
+          id: menu.id,
+          name: menu.name,
+          prompt,
+          systemPrompt,
+          originalPrompt: menu.prompt
+        },
+        selectionText: info.selectionText || ""
+      });
+    });
+    return;
+  }
   if (info.menuItemId === "summarize_full_page") {
     console.debug("[Summarize] 右键菜单触发 summarize_full_page");
     chrome.tabs.sendMessage(tab.id, { action: "getPageContent" }, function (response) {
@@ -58,8 +82,22 @@ function addContextMenus() {
   chrome.contextMenus.removeAll();
   let defaultConfig = {
     engines: chrome.i18n.getMessage("defaultEnginesConfig"),
+    llmChatMenus: [],
   }; // 默认配置
   chrome.storage.sync.get({ ...defaultConfig, ...defaultLLMConfig }, function (items) {
+    // 1. 先添加对话大模型菜单
+    if (Array.isArray(items.llmChatMenus)) {
+      items.llmChatMenus.forEach((menu, idx) => {
+        if (menu && menu.name && menu.prompt) {
+          chrome.contextMenus.create({
+            title: menu.name,
+            id: "llm_chat_menu_" + idx,
+            contexts: ["selection"],
+          });
+        }
+      });
+    }
+    // 2. 再添加 engines
     let engines = JSON.parse(items.engines);
     engines.forEach(function (engine) {
       if (engine.name && engine.url && engine.inRight) {
@@ -70,7 +108,7 @@ function addContextMenus() {
         });
       }
     });
-    // 仅在开关打开且参数齐全时新增“总结全文”菜单
+    // 3. 总结全文菜单
     console.debug("[Summarize] 添加右键菜单", items);
 
     const enableSummarize = items.llmEnableSummarize;
@@ -113,6 +151,15 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       sendResponse({ reply: "对话失败: " + err.message });
     });
     return true; // 表示异步
+  }
+  if (request.action === "chatWithLLMMenu" && request.menu) {
+    // 单轮/多轮对话，参数来自 menu
+    chatWithLLMMenu(request.menu, request.history).then(reply => {
+      sendResponse({ reply });
+    }).catch(err => {
+      sendResponse({ reply: "对话失败: " + err.message });
+    });
+    return true;
   }
 });
 
@@ -253,6 +300,65 @@ async function summarizeContentWithHistory(history) {
           frequency_penalty: 0,
           presence_penalty: 0
         };
+
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "api-key": apiKey
+          },
+          body: JSON.stringify(body)
+        });
+
+        if (!res.ok) {
+          const errText = await res.text();
+          reject(new Error("API请求失败: " + res.status + " " + errText));
+          return;
+        }
+        const data = await res.json();
+        resolve(
+          data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
+            ? data.choices[0].message.content.trim()
+            : "未获取到回复内容"
+        );
+      } catch (err) {
+        reject(err);
+      }
+    });
+  });
+}
+
+// 新增：对话大模型菜单调用
+async function chatWithLLMMenu(menu, history) {
+  return new Promise((resolve, reject) => {
+    chrome.storage.sync.get(defaultLLMConfig, async function (llmConfig) {
+      try {
+        if (!llmConfig.llmApiKey || !llmConfig.llmEndpoint) {
+          reject(new Error("未配置API Key或Endpoint"));
+          return;
+        }
+        const apiKey = llmConfig.llmApiKey;
+        const endpoint = llmConfig.llmEndpoint;
+        const prompt = menu.prompt;
+        const systemPrompt = menu.systemPrompt || llmConfig.llmSystemPrompt || defaultLLMConfig.llmSystemPrompt;
+        const max_tokens = parseInt(llmConfig.llmMaxTokens) || 2048;
+        const temperature = parseFloat(llmConfig.llmTemperature) || 0.5;
+
+        const body = {
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...history
+          ],
+          max_tokens: max_tokens,
+          temperature: temperature,
+          top_p: 1,
+          frequency_penalty: 0,
+          presence_penalty: 0
+        };
+
+        if (history.length === 0) {
+          body.messages.push({ role: "user", content: prompt });
+        }
 
         const res = await fetch(endpoint, {
           method: "POST",

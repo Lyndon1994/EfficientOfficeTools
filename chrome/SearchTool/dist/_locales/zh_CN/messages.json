@@ -69,5 +69,17 @@
     "llmSystemPrompt": {"message": "你是一个专业的中文内容总结助手，输出内容必须是可直接用于innerHTML展示的HTML片段。"},
     "enableSummarize": { "message": "启用总结全文" },
     "enableSummarizeTip": { "message": "开启后可在右键菜单中使用总结全文功能，需配置API Key和Endpoint" },
-    "summarizeFullPage": { "message": "总结全文" }
+    "summarizeFullPage": { "message": "总结全文" },
+    "readmeTitle": { "message": "使用说明" },
+    "welcomeContributeTitle": { "message": "欢迎贡献代码：" },
+    "welcomeContribute": { "message": "你可以为本工具贡献代码以改进功能。" },
+    "welcomeContributeLink": { "message": "点此访问 GitHub。" },
+    "llmConfigDocTitle": { "message": "LLM 配置说明：" },
+    "llmConfigApiKey": { "message": "API Key: 你的大模型服务密钥。" },
+    "llmConfigEndpoint": { "message": "Endpoint: LLM 接口地址，例如 https://my-ai.openai.azure.com/openai/deployments/my-gpt-4.1/chat/completions?api-version=2024-02-15-preview" },
+    "llmConfigPrompt": { "message": "Prompt: 用户输入的提示词模板，支持 {content} 占位符。" },
+    "llmConfigSystemPrompt": { "message": "System Prompt: 系统级提示词，影响模型行为。" },
+    "llmConfigMaxTokens": { "message": "Max Tokens: 返回内容最大长度。" },
+    "llmConfigTemperature": { "message": "Temperature: 采样温度，越高越随机。" },
+    "llmConfigMenus": { "message": "菜单可自定义多组 prompt，方便快速切换。" }
 }
