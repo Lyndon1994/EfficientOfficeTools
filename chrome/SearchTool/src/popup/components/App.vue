@@ -581,6 +581,7 @@ function parseUrl(url) {
 
 .el-tag {
     border-color: #d9ecff;
+    height: 30px;
 }
 
 .engine-row-fixed-bottom {
