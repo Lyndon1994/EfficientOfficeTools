@@ -316,41 +316,36 @@
       <template #header>
         <span>{{ getMessage('llmSettings') || '大模型（LLM）配置' }}</span>
       </template>
-      <el-form-item :label="'API Key'">
+      <!-- 新增：模型配置JSON输入框 -->
+      <el-form-item :label="'Models JSON'">
         <el-input
-          v-model="llmConfig.apiKey"
-          placeholder="API Key"
-          style="width: 400px"
+          v-model="llmConfig.llmModels"
+          type="textarea"
+          :rows="8"
+          placeholder='{
+  "openai": {
+    "active": true,
+    "endpoint": "https://api.openai.com/v1/chat/completions",
+    "method": "POST",
+    "headers": {
+      "Authorization": "Bearer ${API_KEY}",
+      "Content-Type": "application/json",
+    },
+    "bodyParams": {
+      "model": "gpt-3.5",
+      "messages": "${MESSAGES}",
+      "temperature": 0.7
+    },
+    "responseParser": "response.choices[0].message.content"
+  }
+}'
+          style="width: 100%; max-width: 800px"
         ></el-input>
+        <div style="color: #888; font-size: 12px; margin-top: 4px;">
+          {{ getMessage('llmModelsJsonTip') || 'Please enter a JSON object. Each key is a model name, and the value is an object with fields: active, endpoint, method, headers, bodyParams, responseParser.' }}
+        </div>
       </el-form-item>
-      <el-form-item :label="'Endpoint'">
-        <el-input
-          v-model="llmConfig.endpoint"
-          placeholder="Endpoint, e.g. https://my-ai.openai.azure.com/openai/deployments/my-gpt-4.1/chat/completions?api-version=2024-02-15-preview"
-          style="width: 600px"
-        ></el-input>
-      </el-form-item>
-      <el-form-item :label="'Max Tokens'">
-        <el-input-number
-          v-model="llmConfig.max_tokens"
-          :min="128"
-          :max="32768"
-          :step="128"
-          style="width: 200px"
-        ></el-input-number>
-      </el-form-item>
-      <el-form-item :label="'Temperature'">
-        <el-input-number
-          v-model="llmConfig.temperature"
-          :min="0"
-          :max="2"
-          :step="0.1"
-          style="width: 120px"
-        ></el-input-number>
-      </el-form-item>
-
       <el-divider></el-divider>
-      
       <el-form-item>
         <el-tooltip
           class="item"
@@ -364,7 +359,6 @@
           ></el-switch>
         </el-tooltip>
       </el-form-item>
-
       <el-form-item :label="'Prompt'">
         <el-input
           v-model="llmConfig.prompt"
@@ -384,7 +378,6 @@
         ></el-input>
       </el-form-item>
       <el-divider></el-divider>
-      
       <el-form-item :label="'Ask LLM'">
         <draggable
           v-model:list="llmChatMenus"
@@ -487,11 +480,8 @@ export default defineComponent({
             },
             llmConfig: {
                 enableSummarize: false,
-                apiKey: "",
-                endpoint: "",
+                llmModels: '[]', // 新增，模型配置JSON字符串
                 prompt: "",
-                max_tokens: 32000,
-                temperature: 0.5,
                 systemPrompt: ""
             },
             llmChatMenus: [
@@ -532,11 +522,8 @@ export default defineComponent({
                 popupHistoryEnabled: true,
                 popupHistoryDays: 90,
                 llmEnableSummarize: false,
-                llmApiKey: "",
-                llmEndpoint: "",
+                llmModels: '[]', // 新增
                 llmPrompt: this.getMessage('llmPrompt'),
-                llmMaxTokens: this.getMessage('llmMaxTokens'),
-                llmTemperature: this.getMessage('llmTemperature'),
                 llmSystemPrompt: this.getMessage('llmSystemPrompt'),
                 llmChatMenus: [],
             }; // 默认配置
@@ -564,11 +551,8 @@ export default defineComponent({
                     that.settings.popupHistoryEnabled = items.popupHistoryEnabled;
                     that.settings.popupHistoryDays = items.popupHistoryDays;
                     that.llmConfig.enableSummarize = items.llmEnableSummarize || false;
-                    that.llmConfig.apiKey = items.llmApiKey || "";
-                    that.llmConfig.endpoint = items.llmEndpoint || "";
+                    that.llmConfig.llmModels = items.llmModels || '[]';
                     that.llmConfig.prompt = items.llmPrompt || "";
-                    that.llmConfig.max_tokens = parseInt(items.llmMaxTokens) || 32000;
-                    that.llmConfig.temperature = parseFloat(items.llmTemperature) || 0.5;
                     that.llmConfig.systemPrompt = items.llmSystemPrompt || "";
                     let loadedMenus = Array.isArray(items.llmChatMenus) ? items.llmChatMenus : [];
                     that.llmChatMenus = loadedMenus.map((menu, idx) => ({
@@ -680,11 +664,8 @@ export default defineComponent({
                 popupHistoryEnabled: this.settings.popupHistoryEnabled,
                 popupHistoryDays: this.settings.popupHistoryDays,
                 llmEnableSummarize: this.llmConfig.enableSummarize,
-                llmApiKey: this.llmConfig.apiKey,
-                llmEndpoint: this.llmConfig.endpoint,
+                llmModels: this.llmConfig.llmModels,
                 llmPrompt: this.llmConfig.prompt,
-                llmMaxTokens: this.llmConfig.max_tokens,
-                llmTemperature: this.llmConfig.temperature,
                 llmSystemPrompt: this.llmConfig.systemPrompt,
                 llmChatMenus: this.llmChatMenus.map(menu => ({
                     id: menu.id,
@@ -755,7 +736,17 @@ export default defineComponent({
                             this.settings.textColor = '#202124';
                         }
                         if (data.llmConfig) {
-                            this.llmConfig = Object.assign(this.llmConfig, data.llmConfig);
+                            // 兼容旧结构
+                            if (typeof data.llmConfig.llmModels === 'string') {
+                                this.llmConfig.llmModels = data.llmConfig.llmModels;
+                            } else if (Array.isArray(data.llmConfig.llmModels)) {
+                                this.llmConfig.llmModels = JSON.stringify(data.llmConfig.llmModels, null, 2);
+                            } else {
+                                this.llmConfig.llmModels = '[]';
+                            }
+                            this.llmConfig.enableSummarize = !!data.llmConfig.enableSummarize;
+                            this.llmConfig.prompt = data.llmConfig.prompt || "";
+                            this.llmConfig.systemPrompt = data.llmConfig.systemPrompt || "";
                         }
                         if (Array.isArray(data.llmChatMenus)) {
                             this.llmChatMenus = data.llmChatMenus.map((menu, idx) => ({

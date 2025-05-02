@@ -70,12 +70,9 @@ chrome.contextMenus.onClicked.addListener(function (info, tab) {
 // LLM参数默认值，key与option页面保持一致
 const defaultLLMConfig = {
   llmEnableSummarize: false,
-  llmApiKey: "",
-  llmEndpoint: "",
-  llmPrompt: chrome.i18n.getMessage("llmPrompt") || "请用HTML格式总结以下网页内容，内容要有条理、分点、可直接用于innerHTML展示：\n%s",
-  llmMaxTokens: chrome.i18n.getMessage("llmMaxTokens") || "32000",
-  llmTemperature: chrome.i18n.getMessage("llmTemperature") || "0.5",
-  llmSystemPrompt: chrome.i18n.getMessage("llmSystemPrompt") || "你是一个专业的中文内容总结助手，输出内容必须是可直接用于innerHTML展示的HTML片段。"
+  llmModels: '[]', // 与 options 页一致，模型配置JSON字符串
+  llmPrompt: chrome.i18n.getMessage("llmPrompt") || "",
+  llmSystemPrompt: chrome.i18n.getMessage("llmSystemPrompt") || ""
 };
 
 function addContextMenus() {
@@ -111,10 +108,8 @@ function addContextMenus() {
     // 3. 总结全文菜单
     console.debug("[Summarize] 添加右键菜单", items);
 
-    const enableSummarize = items.llmEnableSummarize;
-    const apiKey = items.llmApiKey;
-    const endpoint = items.llmEndpoint;
-    if (enableSummarize && apiKey && endpoint) {
+    // 修复：只依赖 enableSummarize
+    if (items.llmEnableSummarize) {
       chrome.contextMenus.create({
         title: chrome.i18n.getMessage("summarizeFullPage") || "总结全文",
         id: "summarize_full_page",
@@ -216,173 +211,241 @@ chrome.commands.onCommand.addListener(function (command) {
   }
 });
 
-// LangChain Azure OpenAI 调用函数（直接 HTTP 请求，不用 langchain）
-async function summarizeContent(content) {
-  return new Promise((resolve, reject) => {
-    chrome.storage.sync.get(defaultLLMConfig, async function (llmConfig) {
-      try {
-        // 检查必要参数
-        if (!llmConfig.llmApiKey || !llmConfig.llmEndpoint) {
-          reject(new Error("未配置API Key或Endpoint"));
-          return;
-        }
-        const apiKey = llmConfig.llmApiKey;
-        const endpoint = llmConfig.llmEndpoint;
-        const prompt = (llmConfig.llmPrompt || defaultLLMConfig.llmPrompt).replace("%s", content);
-        const max_tokens = parseInt(llmConfig.llmMaxTokens) || parseInt(defaultLLMConfig.llmMaxTokens);
-        const temperature = parseFloat(llmConfig.llmTemperature) || parseFloat(defaultLLMConfig.llmTemperature);
-        const systemPrompt = llmConfig.llmSystemPrompt || defaultLLMConfig.llmSystemPrompt;
-
-        const body = {
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: prompt }
-          ],
-          max_tokens: max_tokens,
-          temperature: temperature,
-          top_p: 1,
-          frequency_penalty: 0,
-          presence_penalty: 0
-        };
-
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "api-key": apiKey
-          },
-          body: JSON.stringify(body)
-        });
-
-        if (!res.ok) {
-          const errText = await res.text();
-          reject(new Error("API请求失败: " + res.status + " " + errText));
-          return;
-        }
-
-        const data = await res.json();
-        resolve(
-          data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
-            ? data.choices[0].message.content.trim()
-            : "未获取到总结内容"
+// 动态变量注入函数
+function buildConfig(configJSON, variables) {
+  // 深拷贝
+  const config = JSON.parse(JSON.stringify(configJSON));
+  // 如果有 bodyParams.messages 并且 variables.MESSAGES 存在，则直接赋值
+  if (
+    config.bodyParams &&
+    Object.prototype.hasOwnProperty.call(config.bodyParams, "messages") &&
+    variables.MESSAGES
+  ) {
+    config.bodyParams.messages = variables.MESSAGES;
+  }
+  // 其他字段做字符串占位符替换
+  function replaceVars(obj) {
+    for (const key in obj) {
+      if (typeof obj[key] === "string") {
+        obj[key] = obj[key].replace(/\${(.*?)}/g, (_, k) =>
+          variables[k] !== undefined ? variables[k] : ""
         );
-      } catch (err) {
-        reject(err);
+      } else if (typeof obj[key] === "object" && obj[key] !== null) {
+        replaceVars(obj[key]);
       }
+    }
+  }
+  // 跳过 bodyParams.messages
+  if (config.bodyParams) {
+    for (const key in config.bodyParams) {
+      if (key !== "messages") {
+        if (typeof config.bodyParams[key] === "string") {
+          config.bodyParams[key] = config.bodyParams[key].replace(/\${(.*?)}/g, (_, k) =>
+            variables[k] !== undefined ? variables[k] : ""
+          );
+        } else if (typeof config.bodyParams[key] === "object" && config.bodyParams[key] !== null) {
+          replaceVars(config.bodyParams[key]);
+        }
+      }
+    }
+  }
+  // 其他顶层字段
+  for (const key in config) {
+    if (key !== "bodyParams" && typeof config[key] === "string") {
+      config[key] = config[key].replace(/\${(.*?)}/g, (_, k) =>
+        variables[k] !== undefined ? variables[k] : ""
+      );
+    }
+  }
+  return config;
+}
+
+// 获取 models 配置（从 storage 读取并解析）
+async function getActiveModelConfig() {
+  return new Promise((resolve, reject) => {
+    chrome.storage.sync.get({ llmModels: "" }, function(items) {
+      let models = {};
+      try {
+        if (typeof items.llmModels === "string" && items.llmModels.trim()) {
+          models = JSON.parse(items.llmModels);
+        }
+      } catch (e) {
+        // ignore parse error
+      }
+      // 取第一个 active 的模型
+      for (const [name, cfg] of Object.entries(models)) {
+        if (cfg && cfg.active) {
+          resolve({ name, config: cfg });
+          return;
+        }
+      }
+      resolve(null);
     });
   });
+}
+
+// 通用请求函数
+async function callModel(configName, variables) {
+  // 读取 models 配置
+  const { name, config } = await getActiveModelConfig() || {};
+  if (!config) throw new Error("No active model config found");
+  const modelConfig = buildConfig(config, variables);
+
+  try {
+    const response = await fetch(modelConfig.endpoint, {
+      method: modelConfig.method || "POST",
+      headers: modelConfig.headers || {},
+      body: modelConfig.method === "GET" ? undefined : JSON.stringify(modelConfig.bodyParams)
+    });
+    const data = await response.json();
+    // 安全解析 responseParser
+    if (typeof modelConfig.responseParser === "string") {
+      // 只支持以 response. 开头的路径，如 response.choices[0].message.content
+      if (modelConfig.responseParser.startsWith("response.")) {
+        let val = data;
+        try {
+          // 去掉 response. 前缀
+          const pathArr = modelConfig.responseParser.replace(/^response\./, "").split(".");
+          for (let i = 0; i < pathArr.length; i++) {
+            let part = pathArr[i];
+            // 处理数组下标
+            const arrayMatch = part.match(/^(\w+)\[(\d+)\]$/);
+            if (arrayMatch) {
+              const arrKey = arrayMatch[1];
+              const arrIdx = Number(arrayMatch[2]);
+              val = val[arrKey];
+              if (!Array.isArray(val) || val.length <= arrIdx) {
+                return "";
+              }
+              val = val[arrIdx];
+            } else {
+              val = val[part];
+            }
+            if (val === undefined || val === null) {
+              return "";
+            }
+          }
+          return val;
+        } catch (e) {
+          return "";
+        }
+      } else {
+        // 不支持其他类型
+        return "";
+      }
+    }
+    return data;
+  } catch (error) {
+    console.error(`${configName || name} API Error:`, error);
+    throw error;
+  }
+}
+
+// summarizeContent 支持 models JSON 配置（不再兼容旧配置）
+async function summarizeContent(content) {
+  const activeModel = await getActiveModelConfig();
+  if (!activeModel || !activeModel.config) {
+    throw new Error("No active model config found");
+  }
+  // 读取 option 页面 prompt/systemPrompt
+  let optionPrompts = await new Promise(resolve => {
+    chrome.storage.sync.get({ llmPrompt: "", llmSystemPrompt: "" }, resolve);
+  });
+  const userPrompt = (optionPrompts.llmPrompt || "").replace("{content}", content);
+  const systemPrompt = optionPrompts.llmSystemPrompt || "";
+
+  let messages = [];
+  // system prompt
+  if (
+    activeModel.config.bodyParams &&
+    activeModel.config.bodyParams.messages &&
+    Array.isArray(activeModel.config.bodyParams.messages)
+  ) {
+    // 如果用户在json里配置了messages模板，则用模板
+    messages = activeModel.config.bodyParams.messages.map(m => {
+      const replaced = {};
+      for (const key in m) {
+        if (typeof m[key] === "string") {
+          replaced[key] = m[key].replace(/\${content}/g, content);
+        } else {
+          replaced[key] = m[key];
+        }
+      }
+      return replaced;
+    });
+  } else {
+    // 默认拼装：先 systemPrompt，再 option prompt，再正文内容
+    if (systemPrompt) {
+      messages.push({ role: "system", content: systemPrompt });
+    } else if (activeModel.config.systemPrompt) {
+      messages.push({ role: "system", content: activeModel.config.systemPrompt });
+    }
+    if (userPrompt) {
+      messages.push({ role: "user", content: userPrompt });
+    }
+    // 兼容原有逻辑，正文内容也加一条 user message
+    messages.push({ role: "user", content });
+  }
+  const variables = {
+    MESSAGES: messages
+  };
+  const result = await callModel(activeModel.name, variables);
+  return typeof result === "string" ? result : JSON.stringify(result);
 }
 
 // 新增多轮对话函数
 async function summarizeContentWithHistory(history) {
-  return new Promise((resolve, reject) => {
-    chrome.storage.sync.get(defaultLLMConfig, async function (llmConfig) {
-      try {
-        // 检查必要参数
-        if (!llmConfig.llmApiKey || !llmConfig.llmEndpoint) {
-          reject(new Error("未配置API Key或Endpoint"));
-          return;
-        }
-        const apiKey = llmConfig.llmApiKey;
-        const endpoint = llmConfig.llmEndpoint;
-        const max_tokens = parseInt(llmConfig.llmMaxTokens) || parseInt(defaultLLMConfig.llmMaxTokens);
-        const temperature = parseFloat(llmConfig.llmTemperature) || parseFloat(defaultLLMConfig.llmTemperature);
-        const systemPrompt = llmConfig.llmSystemPrompt || defaultLLMConfig.llmSystemPrompt;
-
-        const body = {
-          messages: [
-            { role: "system", content: systemPrompt },
-            ...history
-          ],
-          max_tokens: max_tokens,
-          temperature: temperature,
-          top_p: 1,
-          frequency_penalty: 0,
-          presence_penalty: 0
-        };
-
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "api-key": apiKey
-          },
-          body: JSON.stringify(body)
-        });
-
-        if (!res.ok) {
-          const errText = await res.text();
-          reject(new Error("API请求失败: " + res.status + " " + errText));
-          return;
-        }
-        const data = await res.json();
-        resolve(
-          data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
-            ? data.choices[0].message.content.trim()
-            : "未获取到回复内容"
-        );
-      } catch (err) {
-        reject(err);
-      }
-    });
+  const activeModel = await getActiveModelConfig();
+  if (!activeModel || !activeModel.config) {
+    throw new Error("No active model config found");
+  }
+  // 读取 option 页面 prompt/systemPrompt
+  let optionPrompts = await new Promise(resolve => {
+    chrome.storage.sync.get({ llmPrompt: "", llmSystemPrompt: "" }, resolve);
   });
+  const userPrompt = optionPrompts.llmPrompt || "";
+  const systemPrompt = optionPrompts.llmSystemPrompt || "";
+
+  let messages = [];
+  if (Array.isArray(history) && history.length > 0) {
+    messages = history;
+  } else {
+    if (systemPrompt) {
+      messages.push({ role: "system", content: systemPrompt });
+    } else if (activeModel.config.systemPrompt) {
+      messages.push({ role: "system", content: activeModel.config.systemPrompt });
+    }
+    if (userPrompt) {
+      messages.push({ role: "user", content: userPrompt });
+    }
+  }
+  const variables = {
+    MESSAGES: messages
+  };
+  const result = await callModel(activeModel.name, variables);
+  return typeof result === "string" ? result : JSON.stringify(result);
 }
 
 // 新增：对话大模型菜单调用
 async function chatWithLLMMenu(menu, history) {
-  return new Promise((resolve, reject) => {
-    chrome.storage.sync.get(defaultLLMConfig, async function (llmConfig) {
-      try {
-        if (!llmConfig.llmApiKey || !llmConfig.llmEndpoint) {
-          reject(new Error("未配置API Key或Endpoint"));
-          return;
-        }
-        const apiKey = llmConfig.llmApiKey;
-        const endpoint = llmConfig.llmEndpoint;
-        const prompt = menu.prompt;
-        const systemPrompt = menu.systemPrompt || llmConfig.llmSystemPrompt || defaultLLMConfig.llmSystemPrompt;
-        const max_tokens = parseInt(llmConfig.llmMaxTokens) || 2048;
-        const temperature = parseFloat(llmConfig.llmTemperature) || 0.5;
-
-        const body = {
-          messages: [
-            { role: "system", content: systemPrompt },
-            ...history
-          ],
-          max_tokens: max_tokens,
-          temperature: temperature,
-          top_p: 1,
-          frequency_penalty: 0,
-          presence_penalty: 0
-        };
-
-        if (history.length === 0) {
-          body.messages.push({ role: "user", content: prompt });
-        }
-
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "api-key": apiKey
-          },
-          body: JSON.stringify(body)
-        });
-
-        if (!res.ok) {
-          const errText = await res.text();
-          reject(new Error("API请求失败: " + res.status + " " + errText));
-          return;
-        }
-        const data = await res.json();
-        resolve(
-          data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
-            ? data.choices[0].message.content.trim()
-            : "未获取到回复内容"
-        );
-      } catch (err) {
-        reject(err);
-      }
-    });
-  });
+  const activeModel = await getActiveModelConfig();
+  if (!activeModel || !activeModel.config) {
+    throw new Error("No active model config found");
+  }
+  // 只传递最终 MESSAGES
+  let messages = [];
+  if (history && history.length > 0) {
+    messages = history;
+  } else {
+    // 修复：加上 systemPrompt
+    if (menu.systemPrompt) {
+      messages.push({ role: "system", content: menu.systemPrompt });
+    }
+    messages.push({ role: "user", content: menu.prompt });
+  }
+  const variables = {
+    MESSAGES: messages
+  };
+  const result = await callModel(activeModel.name, variables);
+  return typeof result === "string" ? result : JSON.stringify(result);
 }
