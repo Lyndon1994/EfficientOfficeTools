@@ -50,9 +50,9 @@ chrome.contextMenus.onClicked.addListener(function (info, tab) {
       }
       console.debug("[Summarize] 收到页面内容", response);
       if (response && response.content) {
-        summarizeContent(response.content).then(summary => {
-          console.debug("[Summarize] 总结结果", summary);
-          chrome.tabs.sendMessage(tab.id, { action: "showSummaryDialog", summary }, function(resp) {
+        summarizeContent(response.content).then(({ result, messages }) => {
+          console.debug("[Summarize] 总结结果", result);
+          chrome.tabs.sendMessage(tab.id, { action: "showSummaryDialog", summary: result, messages: messages }, function(resp) {
             if (chrome.runtime.lastError) {
               console.warn("[Summarize] sendMessage(showSummaryDialog) failed:", chrome.runtime.lastError.message);
             }
@@ -451,42 +451,22 @@ async function summarizeContent(content) {
   const systemPrompt = optionPrompts.llmSystemPrompt || "";
 
   let messages = [];
-  // system prompt
-  if (
-    activeModel.config.bodyParams &&
-    activeModel.config.bodyParams.messages &&
-    Array.isArray(activeModel.config.bodyParams.messages)
-  ) {
-    // 如果用户在json里配置了messages模板，则用模板
-    messages = activeModel.config.bodyParams.messages.map(m => {
-      const replaced = {};
-      for (const key in m) {
-        if (typeof m[key] === "string") {
-          replaced[key] = m[key].replace(/\${content}/g, content);
-        } else {
-          replaced[key] = m[key];
-        }
-      }
-      return replaced;
-    });
-  } else {
-    // 默认拼装：先 systemPrompt，再 option prompt，再正文内容
-    if (systemPrompt) {
-      messages.push({ role: "system", content: systemPrompt });
-    } else if (activeModel.config.systemPrompt) {
-      messages.push({ role: "system", content: activeModel.config.systemPrompt });
-    }
-    if (userPrompt) {
-      messages.push({ role: "user", content: userPrompt });
-    }
-    // 兼容原有逻辑，正文内容也加一条 user message
-    messages.push({ role: "user", content });
+  // 默认拼装：先 systemPrompt，再 option prompt，再正文内容
+  if (systemPrompt) {
+    messages.push({ role: "system", content: systemPrompt });
+  }
+  if (userPrompt) {
+    messages.push({ role: "user", content: userPrompt });
   }
   const variables = {
     MESSAGES: messages
   };
   const result = await callModel(activeModel.name, variables);
-  return typeof result === "string" ? result : JSON.stringify(result);
+  // 返回 result 和 messages
+  return {
+    result: typeof result === "string" ? result : JSON.stringify(result),
+    messages
+  };
 }
 
 // 新增多轮对话函数
@@ -495,29 +475,33 @@ async function summarizeContentWithHistory(history) {
   if (!activeModel || !activeModel.config) {
     throw new Error("No active model config found");
   }
+  
   // 读取 option 页面 prompt/systemPrompt
   let optionPrompts = await new Promise(resolve => {
     chrome.storage.sync.get({ llmPrompt: "", llmSystemPrompt: "" }, resolve);
   });
+  
   const userPrompt = optionPrompts.llmPrompt || "";
   const systemPrompt = optionPrompts.llmSystemPrompt || "";
 
   let messages = [];
   if (Array.isArray(history) && history.length > 0) {
+    // 使用完整的历史记录，不做系统消息处理，因为前端会保证系统消息的完整性
     messages = history;
   } else {
+    // 这是初始化状态，添加默认的系统消息和用户提示
     if (systemPrompt) {
       messages.push({ role: "system", content: systemPrompt });
-    } else if (activeModel.config.systemPrompt) {
-      messages.push({ role: "system", content: activeModel.config.systemPrompt });
     }
     if (userPrompt) {
       messages.push({ role: "user", content: userPrompt });
     }
   }
+  
   const variables = {
     MESSAGES: messages
   };
+  
   const result = await callModel(activeModel.name, variables);
   return typeof result === "string" ? result : JSON.stringify(result);
 }

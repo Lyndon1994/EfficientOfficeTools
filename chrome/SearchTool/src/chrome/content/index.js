@@ -244,7 +244,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     return true;
   }
   if (request.action === "showSummaryDialog") {
-    showSummaryDialog(request.summary);
+    showSummaryDialog(request.summary, request.messages);
     // Send immediate response instead of returning true without sending a response
     sendResponse({ success: true });
     // Don't return true since we're not sending an async response
@@ -260,7 +260,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 
 // 简单弹窗显示总结内容
-function showSummaryDialog(summary) {
+function showSummaryDialog(summary, messages) {
   // 移除已存在的弹窗
   let old = document.getElementById("addon_summary_dialog");
   if (old) old.remove();
@@ -268,17 +268,8 @@ function showSummaryDialog(summary) {
   // 保留全文 summary 内容
   let summaryContent = summary;
 
-  // 新增：保存最初网页正文内容
-  let pageContent = "";
-  // 尝试获取正文内容
-  if (document.body) {
-    pageContent = document.body.innerText || "";
-  } else if (document.documentElement) {
-    pageContent = document.documentElement.innerText || "";
-  }
-
   // 仅保存对话历史（不含 summary/网页内容）
-  let chatHistory = [];
+  let chatHistory = messages || [];
 
   // summary 直接作为 HTML 展示
   let dialog = document.createElement("div");
@@ -341,13 +332,13 @@ function showSummaryDialog(summary) {
     const question = input.value.trim();
     if (!question) return;
     appendMessage("user", question);
-    // 构造完整 history，始终以网页内容为第一条
+    
     const history = [
-      { role: "system", content: chrome.i18n.getMessage("llmPageContentPrefix") + (pageContent || "") },
-      { role: "assistant", content: summaryContent },
       ...chatHistory,
+      { role: "assistant", content: summaryContent },
       { role: "user", content: question }
     ];
+    
     input.value = "";
     // 显示loading
     appendMessage("assistant", chrome.i18n.getMessage("llmThinking") || "思考中...");
@@ -385,8 +376,10 @@ function showLLMChatDialog(menu, selectionText, requestId) {
   }
 
   let summaryContent = ""; // 首次为空
-  let chatHistory = [];
-  let pageContent = selectionText || "";
+  let chatHistory = [
+    { role: "system", content: menu.systemPrompt || "" },
+    { role: "user", content: menu.prompt }
+  ];
   
   // 添加标记，防止重复发送
   let messageProcessing = false;
@@ -462,18 +455,14 @@ function showLLMChatDialog(menu, selectionText, requestId) {
       return;
     }
     
-    appendMessage("user", selectionText);
+    appendMessage("user", menu.prompt);
     appendMessage("assistant", chrome.i18n.getMessage("llmThinking") || "思考中...");
-    
-    const history = [
-      { role: "user", content: menu.prompt.replace("{content}", selectionText) }
-    ];
     
     chrome.runtime.sendMessage(
       { 
         action: "chatWithLLMMenu", 
         menu, 
-        history,
+        history: chatHistory,
         dialogId: dialogId,
         requestId: requestId
       },
@@ -501,7 +490,6 @@ function showLLMChatDialog(menu, selectionText, requestId) {
         
         if (response && response.reply) {
           appendMessage("assistant", response.reply);
-          chatHistory.push({ role: "user", content: menu.prompt.replace("{content}", selectionText) });
           chatHistory.push({ role: "assistant", content: response.reply });
         } else {
           appendMessage("assistant", chrome.i18n.getMessage("llmChatFailed") || "对话失败，请重试。");
