@@ -124,17 +124,30 @@ chrome.runtime.onInstalled.addListener(addContextMenus);
 
 // 监听来自content-script的消息
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (Array.isArray(request)) {
-    // 兼容旧代码
-    request.forEach(function (engine) {
-      if (engine.name && engine.url && engine.inRight) {
-        chrome.contextMenus.create({
-          title: chrome.i18n.getMessage("searchFor", engine.name),
-          id: engine.url,
-          contexts: ["selection"],
-        });
-      }
-    });
+  if (request.action === "updateMenus") {
+    chrome.contextMenus.removeAll();
+    if (Array.isArray(request.llmChatMenus)) {
+      request.llmChatMenus.forEach((menu, idx) => {
+        if (menu && menu.name && menu.prompt) {
+          chrome.contextMenus.create({
+            title: menu.name,
+            id: "llm_chat_menu_" + idx,
+            contexts: ["selection"],
+          });
+        }
+      });
+    }
+    if (Array.isArray(request.enginesMeta)) {
+      request.enginesMeta.forEach(function (engine) {
+        if (engine.name && engine.url && engine.inRight) {
+          chrome.contextMenus.create({
+            title: chrome.i18n.getMessage("searchFor", engine.name),
+            id: engine.url,
+            contexts: ["selection"],
+          });
+        }
+      });
+    }
     sendResponse("done");
     return;
   }

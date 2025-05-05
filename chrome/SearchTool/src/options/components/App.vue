@@ -675,7 +675,7 @@ export default defineComponent({
                 })),
             };
             console.log("[options] onSubmit saveObj:", saveObj);
-            chrome.runtime.sendMessage(enginesMeta, function (response) {
+            chrome.runtime.sendMessage({ action: "updateMenus", enginesMeta, llmChatMenus: this.llmChatMenus }, function (response) {
                 console.log("[options] runtime.sendMessage response:", response);
             });
             chrome.storage.sync.set(saveObj,
@@ -684,9 +684,6 @@ export default defineComponent({
                     that.$message({
                         message: that.getMessage('saved') + ". " + that.getMessage('refresh'),
                         type: "success",
-                    });
-                    chrome.storage.sync.get(null, function (allItems) {
-                        console.log("[options] chrome.storage.sync.get after set:", allItems);
                     });
                     return true;
                 }
@@ -742,7 +739,7 @@ export default defineComponent({
                             } else if (Array.isArray(data.llmConfig.llmModels)) {
                                 this.llmConfig.llmModels = JSON.stringify(data.llmConfig.llmModels, null, 2);
                             } else {
-                                this.llmConfig.llmModels = '[]';
+                                this.llmConfig.llmModels = '';
                             }
                             this.llmConfig.enableSummarize = !!data.llmConfig.enableSummarize;
                             this.llmConfig.prompt = data.llmConfig.prompt || "";
@@ -797,14 +794,14 @@ export default defineComponent({
                 cancelButtonText: 'No',
                 type: 'warning'
             }).then(() => {
+                chrome.storage.local.clear(function (items) {
+                    console.log("local storage cleared", items);
+                });
                 chrome.storage.sync.clear(function (items) {
                     console.log("[options] chrome.storage.sync.clear done", items);
                     that.$message({
                         message: that.getMessage('reseted'),
                         type: "success",
-                    });
-                    chrome.storage.sync.get(null, function (allItems) {
-                        console.log("[options] chrome.storage.sync.get after clear:", allItems);
                     });
                     return true;
                 });
