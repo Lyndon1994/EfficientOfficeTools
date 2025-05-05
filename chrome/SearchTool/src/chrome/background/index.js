@@ -7,9 +7,16 @@ function parseUrl(url) {
   return obj;
 }
 
+// Add request tracking to prevent duplicates
+const processedRequests = new Map();
+
 chrome.contextMenus.onClicked.addListener(function (info, tab) {
   // 1. 对话大模型菜单
   if (info.menuItemId && info.menuItemId.startsWith("llm_chat_menu_")) {
+    // Generate a request ID based on the menu ID, tab ID and a timestamp
+    const requestId = `${info.menuItemId}_${tab.id}_${Date.now()}`;
+    console.debug(`[LLM Chat] Menu clicked, requestId: ${requestId}`);
+    
     const idx = parseInt(info.menuItemId.replace("llm_chat_menu_", ""));
     chrome.storage.sync.get({ llmChatMenus: [] }, function(items) {
       const menus = Array.isArray(items.llmChatMenus) ? items.llmChatMenus : [];
@@ -17,9 +24,11 @@ chrome.contextMenus.onClicked.addListener(function (info, tab) {
       if (!menu) return;
       const prompt = (menu.prompt || "").replace("{content}", info.selectionText || "");
       const systemPrompt = menu.systemPrompt || "";
+      
       // 发送消息到 content script，弹出对话框
       chrome.tabs.sendMessage(tab.id, {
         action: "showLLMChatDialog",
+        requestId: requestId,
         menu: {
           id: menu.id,
           name: menu.name,
@@ -152,21 +161,95 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     return;
   }
   if (request.action === "chatWithLLM" && Array.isArray(request.history)) {
-    // 多轮对话
-    summarizeContentWithHistory(request.history).then(reply => {
-      sendResponse({ reply });
-    }).catch(err => {
-      sendResponse({ reply: "对话失败: " + err.message });
-    });
-    return true; // 表示异步
+    (async () => {
+      try {
+        // Add timeout to ensure operation completes within message port lifetime
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("请求超时，请重试")), 60000) // 1-minute timeout
+        );
+        
+        const reply = await Promise.race([
+          summarizeContentWithHistory(request.history),
+          timeoutPromise
+        ]);
+        
+        try {
+          sendResponse({ reply });
+        } catch (e) {
+          console.error("Failed to send response, message port might be closed:", e);
+        }
+      } catch (err) {
+        console.error("chatWithLLM error:", err);
+        try {
+          sendResponse({ reply: "对话失败: " + err.message });
+        } catch (e) {
+          console.error("Failed to send error response, message port might be closed:", e);
+        }
+      }
+    })();
+    return true;
   }
   if (request.action === "chatWithLLMMenu" && request.menu) {
-    // 单轮/多轮对话，参数来自 menu
-    chatWithLLMMenu(request.menu, request.history).then(reply => {
-      sendResponse({ reply });
-    }).catch(err => {
-      sendResponse({ reply: "对话失败: " + err.message });
+    // Check if this is a duplicate request
+    const requestKey = JSON.stringify({
+      action: request.action,
+      menu: request.menu?.name,
+      prompt: request.history?.[0]?.content
     });
+    
+    const now = Date.now();
+    const lastRequest = processedRequests.get(requestKey);
+    
+    // If we've seen this exact request in the last 2 seconds, reject it as a duplicate
+    if (lastRequest && (now - lastRequest) < 2000) {
+      console.warn("[LLM Chat] Rejecting duplicate request:", requestKey);
+      sendResponse({ reply: "正在处理中，请稍候...", duplicate: true });
+      return true;
+    }
+    
+    // Mark this request as processed
+    processedRequests.set(requestKey, now);
+    
+    // Clean up old entries every 10 seconds
+    if (now % 10000 < 1000) {
+      for (const [key, timestamp] of processedRequests.entries()) {
+        if (now - timestamp > 10000) {
+          processedRequests.delete(key);
+        }
+      }
+    }
+    
+    (async () => {
+      try {
+        console.debug("[LLM Chat] Processing request:", requestKey);
+        
+        // Add timeout to ensure operation completes within message port lifetime
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("请求超时，请重试")), 60000) // 1-minute timeout
+        );
+        
+        const reply = await Promise.race([
+          chatWithLLMMenu(request.menu, request.history),
+          timeoutPromise
+        ]);
+        
+        try {
+          sendResponse({ reply });
+        } catch (e) {
+          console.error("Failed to send response, message port might be closed:", e);
+        }
+      } catch (err) {
+        console.error("chatWithLLMMenu error:", err);
+        try {
+          sendResponse({ reply: "对话失败: " + err.message });
+        } catch (e) {
+          console.error("Failed to send error response, message port might be closed:", e);
+        }
+      } finally {
+        // Remove this request from tracking after processing
+        processedRequests.delete(requestKey);
+      }
+    })();
     return true;
   }
 });

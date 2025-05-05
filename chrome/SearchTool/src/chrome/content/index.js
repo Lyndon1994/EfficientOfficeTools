@@ -245,11 +245,17 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   }
   if (request.action === "showSummaryDialog") {
     showSummaryDialog(request.summary);
-    return true;
+    // Send immediate response instead of returning true without sending a response
+    sendResponse({ success: true });
+    // Don't return true since we're not sending an async response
   }
   if (request.action === "showLLMChatDialog" && request.menu) {
-    showLLMChatDialog(request.menu, request.selectionText || "");
-    return true;
+    // Store the requestId to track this specific request
+    const requestId = request.requestId || Date.now().toString();
+    console.debug(`[ContentScript] Showing LLM chat dialog for request ${requestId}`);
+    
+    showLLMChatDialog(request.menu, request.selectionText || "", requestId);
+    sendResponse({ success: true, requestId: requestId });
   }
 });
 
@@ -368,17 +374,27 @@ function showSummaryDialog(summary) {
 }
 
 // 新增：对话大模型菜单弹窗
-function showLLMChatDialog(menu, selectionText) {
+function showLLMChatDialog(menu, selectionText, requestId) {
+  console.debug(`[ContentScript] Inside showLLMChatDialog, requestId: ${requestId}`);
+  
   // 移除已存在的弹窗
   let old = document.getElementById("addon_summary_dialog");
-  if (old) old.remove();
+  if (old) {
+    console.debug("[ContentScript] Removing existing dialog");
+    old.remove();
+  }
 
   let summaryContent = ""; // 首次为空
   let chatHistory = [];
   let pageContent = selectionText || "";
+  
+  // 添加标记，防止重复发送
+  let messageProcessing = false;
+  let dialogId = `dialog_${Date.now()}`;
 
   let dialog = document.createElement("div");
   dialog.id = "addon_summary_dialog";
+  dialog.dataset.dialogId = dialogId;
   dialog.style.position = "fixed";
   dialog.style.top = "10%";
   dialog.style.left = "50%";
@@ -431,19 +447,58 @@ function showLLMChatDialog(menu, selectionText) {
 
   // 首次自动发送 prompt
   function sendFirstPrompt() {
+    // 检查是否已经在处理请求
+    if (messageProcessing) {
+      console.debug(`[ContentScript] Already processing a request for dialog ${dialogId}, skipping`);
+      return;
+    }
+    
+    messageProcessing = true;
+    console.debug(`[ContentScript] Sending first prompt for dialog ${dialogId}`);
+    
+    // 检查对话框是否还存在
+    if (!document.getElementById("addon_summary_dialog")) {
+      console.debug(`[ContentScript] Dialog no longer exists, not sending request`);
+      return;
+    }
+    
     appendMessage("user", selectionText);
     appendMessage("assistant", chrome.i18n.getMessage("llmThinking") || "思考中...");
+    
     const history = [
       { role: "user", content: menu.prompt.replace("{content}", selectionText) }
     ];
+    
     chrome.runtime.sendMessage(
-      { action: "chatWithLLMMenu", menu, history },
+      { 
+        action: "chatWithLLMMenu", 
+        menu, 
+        history,
+        dialogId: dialogId,
+        requestId: requestId
+      },
       function(response) {
-        // 移除最后一个"思考中..."消息
+        messageProcessing = false;
+        
+        // 检查是否为重复请求
+        if (response && response.duplicate) {
+          console.debug(`[ContentScript] Received duplicate response for ${dialogId}`);
+          return;
+        }
+        
+        // 检查对话框是否还存在
         const chatDiv = document.getElementById("addon_summary_dialog_chat");
-        if (chatDiv.lastChild && chatDiv.lastChild.innerText.includes(chrome.i18n.getMessage("llmThinking") || "思考中")) {
+        if (!chatDiv) {
+          console.debug(`[ContentScript] Dialog no longer exists when receiving response`);
+          return;
+        }
+        
+        // 移除最后一个"思考中..."消息
+        if (chatDiv.lastChild && chatDiv.lastChild.innerText && 
+            chatDiv.lastChild.innerText.includes(chrome.i18n.getMessage("llmThinking") || "思考中")) {
           chatDiv.removeChild(chatDiv.lastChild);
         }
+        
         if (response && response.reply) {
           appendMessage("assistant", response.reply);
           chatHistory.push({ role: "user", content: menu.prompt.replace("{content}", selectionText) });
@@ -455,12 +510,21 @@ function showLLMChatDialog(menu, selectionText) {
     );
   }
 
-  sendFirstPrompt();
+  // 使用setTimeout确保在DOM加载后再发送，避免竞争条件
+  console.debug(`[ContentScript] Setting timeout to send first prompt for dialog ${dialogId}`);
+  setTimeout(sendFirstPrompt, 100);
 
   function sendUserMessage() {
+    // 检查是否已经在处理请求
+    if (messageProcessing) return;
+    messageProcessing = true;
+    
     const input = document.getElementById("addon_summary_dialog_input");
     const question = input.value.trim();
-    if (!question) return;
+    if (!question) {
+      messageProcessing = false;
+      return;
+    }
     appendMessage("user", question);
     input.value = "";
     appendMessage("assistant", chrome.i18n.getMessage("llmThinking") || "思考中...");
@@ -470,13 +534,27 @@ function showLLMChatDialog(menu, selectionText) {
       { role: "user", content: question }
     ];
     chrome.runtime.sendMessage(
-      { action: "chatWithLLMMenu", menu, history },
+      { 
+        action: "chatWithLLMMenu", 
+        menu, 
+        history,
+        dialogId: dialogId 
+      },
       function(response) {
-        // 移除最后一个"思考中..."消息
+        messageProcessing = false;
+        // 检查对话框是否还存在
         const chatDiv = document.getElementById("addon_summary_dialog_chat");
-        if (chatDiv.lastChild && chatDiv.lastChild.innerText.includes(chrome.i18n.getMessage("llmThinking") || "思考中")) {
+        if (!chatDiv) {
+          console.debug(`[ContentScript] Dialog no longer exists when receiving response`);
+          return;
+        }
+        
+        // 移除最后一个"思考中..."消息
+        if (chatDiv.lastChild && chatDiv.lastChild.innerText && 
+            chatDiv.lastChild.innerText.includes(chrome.i18n.getMessage("llmThinking") || "思考中")) {
           chatDiv.removeChild(chatDiv.lastChild);
         }
+        
         if (response && response.reply) {
           appendMessage("assistant", response.reply);
           chatHistory.push({ role: "user", content: question });
