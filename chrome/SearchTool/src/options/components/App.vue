@@ -46,7 +46,7 @@
       "messages": "{MESSAGES}", // Fixed value
       "temperature": 0.7
     },
-    "responseParser": "response.choices[0].message.content"
+    "responseParser": "response.choices[0].message.content"  // Must start with "response."
   },
   "azureopenai": {
     "active": true, // is this model enabled? Only one model can be enabled at a time.
@@ -61,7 +61,7 @@
       "messages": "{MESSAGES}",  // Fixed value
       "temperature": 0.7
     },
-    "responseParser": "response.choices[0].message.content"
+    "responseParser": "response.choices[0].message.content"  // Must start with "response."
   }
 }` }}
           </pre>

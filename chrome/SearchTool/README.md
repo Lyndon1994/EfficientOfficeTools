@@ -151,7 +151,7 @@ Below are configuration examples for popular Chinese LLMs. Replace the placehold
       "temperature": 1.0,
       "response_format": "json_object"
     },
-    "responseParser": "data.result"
+    "responseParser": "response.result"
   }
 }
 ```
@@ -173,7 +173,7 @@ Below are configuration examples for popular Chinese LLMs. Replace the placehold
       "messages": "${MESSAGES}",
       "stream": false
     },
-    "responseParser": "data.choices[0].message.content"
+    "responseParser": "response.choices[0].message.content"
   }
 }
 ```
@@ -200,7 +200,7 @@ Below are configuration examples for popular Chinese LLMs. Replace the placehold
         "top_p": 0.9
       }
     },
-    "responseParser": "data.output.choices[0].message.content"
+    "responseParser": "response.output.choices[0].message.content"
   }
 }
 ```
@@ -225,7 +225,7 @@ Below are configuration examples for popular Chinese LLMs. Replace the placehold
       "frequency_penalty": 0,
       "max_tokens": 2048
     },
-    "responseParser": "data.choices[0].message.content"
+    "responseParser": "response.choices[0].message.content"
   }
 }
 ```

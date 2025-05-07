@@ -147,7 +147,7 @@ npm run build
       "temperature": 1.0,
       "response_format": "json_object"
     },
-    "responseParser": "data.result"
+    "responseParser": "response.result"
   }
 }
 ```
@@ -169,7 +169,7 @@ npm run build
       "messages": "${MESSAGES}",
       "stream": false
     },
-    "responseParser": "data.choices[0].message.content"
+    "responseParser": "response.choices[0].message.content"
   }
 }
 ```
@@ -196,7 +196,7 @@ npm run build
         "top_p": 0.9
       }
     },
-    "responseParser": "data.output.choices[0].message.content"
+    "responseParser": "response.output.choices[0].message.content"
   }
 }
 ```
@@ -221,7 +221,7 @@ npm run build
       "frequency_penalty": 0,
       "max_tokens": 2048
     },
-    "responseParser": "data.choices[0].message.content"
+    "responseParser": "response.choices[0].message.content"
   }
 }
 ```
