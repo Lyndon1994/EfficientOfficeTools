@@ -227,6 +227,31 @@ npm run build
 ```
 > **认证说明**：使用你的 DeepSeek API Key。
 
+#### 5. SiliconFlow 智谱清言
+
+```json
+{
+  "siliconflow": {
+    "endpoint": "https://api.siliconflow.cn/v1/chat/completions",
+    "method": "POST",
+    "headers": {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer ${API_KEY}"
+    },
+    "bodyParams": {
+      "model": "yi-large",
+      "messages": "${MESSAGES}",
+      "temperature": 0.8,
+      "top_p": 0.95,
+      "stream": false
+    },
+    "responseParser": "response.choices[0].message.content"
+  }
+}
+```
+> **认证说明**：请在 [智谱开放平台](https://platform.siliconflow.cn/) 获取 API Key，并替换 `${API_KEY}`。  
+> **模型说明**：`model` 字段可选 `yi-large`、`yi-medium`、`yi-spark` 等，详见[官方文档](https://docs.siliconflow.cn/cn/api-reference/chat-completions/chat-completions)。
+
 ---
 
 ## 其他说明
