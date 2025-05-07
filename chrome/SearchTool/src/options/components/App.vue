@@ -1,5 +1,5 @@
 <template>
-  <!-- 新增说明区域 -->
+  <!-- LLM 配置说明区域（简洁版，含模型配置示例，国际化） -->
   <div class="info-section" style="margin-bottom: 24px;">
     <el-card shadow="never">
       <template #header>
@@ -26,6 +26,46 @@
           <li>{{ getMessage('llmConfigTemperature') || 'Temperature: 采样温度，越高越随机。' }}</li>
           <li>{{ getMessage('llmConfigMenus') || '菜单可自定义多组 prompt，方便快速切换。' }}</li>
         </ul>
+        <div style="margin-top: 12px; color: #888; font-size: 13px;">
+          {{ getMessage('llmModelsJsonTip') || '请在下方填写模型配置（JSON），支持多模型切换。每个模型需包含 active, endpoint, method, headers, bodyParams, responseParser 字段。' }}
+        </div>
+        <div style="margin-top: 12px;">
+          <strong>{{ getMessage('llmModelsJsonExampleTitle') || '模型配置示例：' }}</strong>
+          <pre style="background:#f8f8f8;border-radius:4px;padding:8px;overflow:auto;font-size:12px;">
+{{ `{
+  "openai": {
+    "active": false, // is this model enabled?
+    "endpoint": "https://api.openai.com/v1/chat/completions",
+    "method": "POST",
+    "headers": {
+      "Authorization": "Bearer {YOUR-API-KEY}", // Replace with your OpenAI API key
+      "Content-Type": "application/json"
+    },
+    "bodyParams": {
+      "model": "gpt-3.5-turbo",
+      "messages": "{MESSAGES}", // Fixed value
+      "temperature": 0.7
+    },
+    "responseParser": "response.choices[0].message.content"
+  },
+  "azureopenai": {
+    "active": true, // is this model enabled? Only one model can be enabled at a time.
+    "endpoint": "https://your-azure-endpoint.openai.azure.com/openai/deployments/gpt-4.1-mini/chat/completions?api-version=2024-02-15-preview",
+    "method": "POST",
+    "headers": {
+      "api-key": "{YOUR-API-KEY}",  // Replace with your Azure OpenAI API key
+      "Content-Type": "application/json"
+    },
+    "bodyParams": {
+      "model": "gpt-4.1-mini",
+      "messages": "{MESSAGES}",  // Fixed value
+      "temperature": 0.7
+    },
+    "responseParser": "response.choices[0].message.content"
+  }
+}` }}
+          </pre>
+        </div>
       </div>
     </el-card>
   </div>
@@ -317,28 +357,12 @@
         <span>{{ getMessage('llmSettings') || '大模型（LLM）配置' }}</span>
       </template>
       <!-- 新增：模型配置JSON输入框 -->
-      <el-form-item :label="'Models JSON'">
+      <el-form-item :label="getMessage('llmModelsJsonLabel') || 'Models JSON'">
         <el-input
           v-model="llmConfig.llmModels"
           type="textarea"
           :rows="8"
-          placeholder='{
-  "openai": {
-    "active": true,
-    "endpoint": "https://api.openai.com/v1/chat/completions",
-    "method": "POST",
-    "headers": {
-      "Authorization": "Bearer ${API_KEY}",
-      "Content-Type": "application/json",
-    },
-    "bodyParams": {
-      "model": "gpt-3.5",
-      "messages": "${MESSAGES}",
-      "temperature": 0.7
-    },
-    "responseParser": "response.choices[0].message.content"
-  }
-}'
+          :placeholder="getMessage('llmModelsJsonPlaceholder')"
           style="width: 100%; max-width: 800px"
         ></el-input>
         <div style="color: #888; font-size: 12px; margin-top: 4px;">
@@ -359,7 +383,7 @@
           ></el-switch>
         </el-tooltip>
       </el-form-item>
-      <el-form-item :label="'Prompt'">
+      <el-form-item :label="getMessage('llmPromptLabel') || 'Prompt'">
         <el-input
           v-model="llmConfig.prompt"
           :placeholder="getMessage('llmPrompt')"
@@ -368,7 +392,7 @@
           style="width: 600px"
         ></el-input>
       </el-form-item>
-      <el-form-item :label="'System Prompt'">
+      <el-form-item :label="getMessage('llmSystemPromptLabel') || 'System Prompt'">
         <el-input
           v-model="llmConfig.systemPrompt"
           :placeholder="getMessage('llmSystemPrompt')"
@@ -378,7 +402,7 @@
         ></el-input>
       </el-form-item>
       <el-divider></el-divider>
-      <el-form-item :label="'Ask LLM'">
+      <el-form-item :label="getMessage('llmAskLlmLabel') || 'Ask LLM'">
         <draggable
           v-model:list="llmChatMenus"
           handle=".llm-menu-handle"
@@ -391,13 +415,13 @@
                 <el-icon class="llm-menu-handle" style="cursor:move;"><Rank /></el-icon>
               </el-col>
               <el-col :span="4">
-                <el-input v-model="element.name" placeholder="Name"></el-input>
+                <el-input v-model="element.name" :placeholder="getMessage('llmChatMenuName') || 'Name'"></el-input>
               </el-col>
               <el-col :span="6">
-                <el-input v-model="element.prompt" placeholder="Prompt, use {content}"></el-input>
+                <el-input v-model="element.prompt" :placeholder="getMessage('llmChatMenuPrompt') || 'Prompt, use {content}'"></el-input>
               </el-col>
               <el-col :span="8">
-                <el-input v-model="element.systemPrompt" placeholder="System Prompt"></el-input>
+                <el-input v-model="element.systemPrompt" :placeholder="getMessage('llmChatMenuSystemPrompt') || 'System Prompt'"></el-input>
               </el-col>
               <el-col :span="2">
                 <el-button
@@ -789,11 +813,15 @@ export default defineComponent({
         },
         reset() {
             let that = this;
-            this.$confirm(that.getMessage('reset') + '?', 'Confirm', {
-                confirmButtonText: 'Yes',
-                cancelButtonText: 'No',
-                type: 'warning'
-            }).then(() => {
+            this.$confirm(
+                that.getMessage('reset') + '?',
+                that.getMessage('confirmTitle') || 'Confirm',
+                {
+                    confirmButtonText: that.getMessage('confirmYes') || 'Yes',
+                    cancelButtonText: that.getMessage('confirmNo') || 'No',
+                    type: 'warning'
+                }
+            ).then(() => {
                 chrome.storage.local.clear(function (items) {
                     console.log("local storage cleared", items);
                 });

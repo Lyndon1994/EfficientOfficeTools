@@ -52,7 +52,7 @@
     "readmeTitle": { "message": "Read Me" },
     "welcomeContributeTitle": { "message": "Welcome to contribute:" },
     "welcomeContribute": { "message": "You are more than welcome to contribute code to improve the tool." },
-    "welcomeContributeLink": { "message": "Click here." },
+    "welcomeContributeLink": { "message": "Click here to get details." },
     "llmConfigDocTitle": { "message": "LLM Configuration Guide:" },
     "llmConfigApiKey": { "message": "API Key: Your LLM service secret key." },
     "llmConfigEndpoint": { "message": "Endpoint: LLM API endpoint, e.g. https://my-ai.openai.azure.com/openai/deployments/my-gpt-4.1/chat/completions?api-version=2024-02-15-preview" },
@@ -75,11 +75,39 @@
     "popupHistoryDaysTip": {"message": "Default days for matching history records in popup"},
     "llmApiKey": {"message": "your-default-api-key"},
     "llmEndpoint": {"message": "https://your-endpoint.example.com/openai/deployments/gpt-4.1-mini/chat/completions?api-version=2024-02-15-preview"},
-    "llmPrompt": {"message": "Please summarize the following web page content in HTML format, structured and pointwise, suitable for innerHTML display:\n%s"},
+    "llmPrompt": {"message": "Here is the full text of a web page. Please read it carefully and provide a concise summary of the main points and key information. Output the summary in innerHTML format.\n{content}"},
     "llmMaxTokens": {"message": "32000"},
     "llmTemperature": {"message": "0.5"},
-    "llmSystemPrompt": {"message": "You are a professional Chinese content summarization assistant. Output must be HTML fragments suitable for innerHTML display."},
+    "llmSystemPrompt": {"message": "You are an AI assistant specialized in summarizing web page content. When given the full text of a web page, your task is to generate a concise and accurate summary of the main points and key information. Output the summary in clear, well-structured English, formatted as innerHTML (using appropriate HTML tags such as <h2>, <ul>, <li>, <p>, etc.)."},
     "enableSummarize": { "message": "Summarize Full Page" },
     "enableSummarizeTip": { "message": "Enable to use the summarize full page feature in the context menu. API Key and Endpoint are required." },
-    "summarizeFullPage": { "message": "Summarize Full Page" }
+    "summarizeFullPage": { "message": "Summarize Full Page" },
+    "llmModelsJsonTip": {
+        "message": "Please enter the model configuration (JSON) below. Multiple models are supported. Each model should include: active, endpoint, method, headers, bodyParams, responseParser."
+    },
+    "llmModelsJsonExampleTitle": {
+        "message": "Model Config Example:"
+    },
+    "llmModelsJsonExample": {
+        "message": "{\n  \"openai\": {\n    \"active\": false,\n    \"endpoint\": \"https://api.openai.com/v1/chat/completions\",\n    \"method\": \"POST\",\n    \"headers\": {\n      \"Authorization\": \"Bearer {YOUR-API-KEY}\",\n      \"Content-Type\": \"application/json\"\n    },\n    \"bodyParams\": {\n      \"model\": \"gpt-3.5-turbo\",\n      \"messages\": \"{MESSAGES}\",\n      \"temperature\": 0.7\n    },\n    \"responseParser\": \"response.choices[0].message.content\"\n  },\n  \"azureopenai\": {\n    \"active\": true,\n    \"endpoint\": \"https://your-azure-endpoint.openai.azure.com/openai/deployments/gpt-4.1-mini/chat/completions?api-version=2024-02-15-preview\",\n    \"method\": \"POST\",\n    \"headers\": {\n      \"api-key\": \"{YOUR-API-KEY}\",\n      \"Content-Type\": \"application/json\"\n    },\n    \"bodyParams\": {\n      \"model\": \"gpt-4.1-mini\",\n      \"messages\": \"${MESSAGES}\",\n      \"temperature\": 0.7\n    },\n    \"responseParser\": \"response.choices[0].message.content\"\n  }\n}"
+    },
+    "llmModelsJsonLabel": { "message": "Models JSON" },
+    "llmModelsJsonPlaceholder": { "message": "{\n  \"openai\": {\n    \"active\": true,\n    \"endpoint\": \"https://api.openai.com/v1/chat/completions\",\n    \"method\": \"POST\",\n    \"headers\": {\n      \"Authorization\": \"Bearer ${API_KEY}\",\n      \"Content-Type\": \"application/json\",\n    },\n    \"bodyParams\": {\n      \"model\": \"gpt-3.5\",\n      \"messages\": \"{MESSAGES}\",\n      \"temperature\": 0.7\n    },\n    \"responseParser\": \"response.choices[0].message.content\"\n  }\n}" },
+    "llmPromptLabel": { "message": "Prompt" },
+    "llmSystemPromptLabel": { "message": "System Prompt" },
+    "llmAskLlmLabel": { "message": "Ask LLM" },
+    "llmChatMenuName": { "message": "Name" },
+    "llmChatMenuPrompt": { "message": "Prompt, use {content}" },
+    "llmChatMenuSystemPrompt": { "message": "System Prompt" },
+    "confirmTitle": { "message": "Confirm" },
+    "confirmYes": { "message": "Yes" },
+    "confirmNo": { "message": "No" },
+    "llmInputPlaceholder": { "message": "Ask more..." },
+    "llmSendBtn": { "message": "Send" },
+    "llmCloseBtn": { "message": "Close" },
+    "llmUserLabel": { "message": "You" },
+    "llmAssistantLabel": { "message": "Assistant" },
+    "llmThinking": { "message": "Thinking..." },
+    "llmChatFailed": { "message": "Chat failed, please try again." },
+    "llmChatDialogTitle": { "message": "Chat Assistant" }
 }

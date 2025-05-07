@@ -289,13 +289,13 @@ function showSummaryDialog(summary, messages) {
   dialog.style.maxHeight = "60vh";
   dialog.style.overflowY = "auto";
   dialog.innerHTML = `
-    <div style="font-weight:bold;margin-bottom:8px;">总结全文</div>
+    <div style="font-weight:bold;margin-bottom:8px;">${chrome.i18n.getMessage("summarizeFullPage") || "总结全文"}</div>
     <div style="white-space:normal;" id="addon_summary_dialog_content">${summaryContent}</div>
     <div id="addon_summary_dialog_chat" style="margin-top:16px;"></div>
     <div style="display:flex;gap:8px;margin-top:12px;">
-      <input id="addon_summary_dialog_input" type="text" style="flex:1;padding:4px 8px;" placeholder="继续提问...">
-      <button id="addon_summary_dialog_send" style="padding:4px 16px;">发送</button>
-      <button id="addon_summary_dialog_close" style="padding:4px 16px;">关闭</button>
+      <input id="addon_summary_dialog_input" type="text" style="flex:1;padding:4px 8px;" placeholder="${chrome.i18n.getMessage("llmInputPlaceholder") || "继续提问..."}">
+      <button id="addon_summary_dialog_send" style="padding:4px 16px;">${chrome.i18n.getMessage("llmSendBtn") || "发送"}</button>
+      <button id="addon_summary_dialog_close" style="padding:4px 16px;">${chrome.i18n.getMessage("llmCloseBtn") || "关闭"}</button>
     </div>
   `;
   document.body.appendChild(dialog);
@@ -403,13 +403,13 @@ function showLLMChatDialog(menu, selectionText, requestId) {
   dialog.style.maxHeight = "60vh";
   dialog.style.overflowY = "auto";
   dialog.innerHTML = `
-    <div style="font-weight:bold;margin-bottom:8px;">${menu.name || "对话助手"}</div>
+    <div style="font-weight:bold;margin-bottom:8px;">${menu.name || chrome.i18n.getMessage("llmChatDialogTitle") || "对话助手"}</div>
     <div style="white-space:normal;" id="addon_summary_dialog_content">${summaryContent}</div>
     <div id="addon_summary_dialog_chat" style="margin-top:16px;"></div>
     <div style="display:flex;gap:8px;margin-top:12px;">
-      <input id="addon_summary_dialog_input" type="text" style="flex:1;padding:4px 8px;" placeholder="请输入...">
-      <button id="addon_summary_dialog_send" style="padding:4px 16px;">发送</button>
-      <button id="addon_summary_dialog_close" style="padding:4px 16px;">关闭</button>
+      <input id="addon_summary_dialog_input" type="text" style="flex:1;padding:4px 8px;" placeholder="${chrome.i18n.getMessage("llmInputPlaceholder") || "请输入..."}">
+      <button id="addon_summary_dialog_send" style="padding:4px 16px;">${chrome.i18n.getMessage("llmSendBtn") || "发送"}</button>
+      <button id="addon_summary_dialog_close" style="padding:4px 16px;">${chrome.i18n.getMessage("llmCloseBtn") || "关闭"}</button>
     </div>
   `;
   document.body.appendChild(dialog);
