@@ -1,5 +1,5 @@
 {
-	"default_locale": "zh",
+	"default_locale": "en",
 	"background": {
 		"service_worker": "js/background.js"
 	},
