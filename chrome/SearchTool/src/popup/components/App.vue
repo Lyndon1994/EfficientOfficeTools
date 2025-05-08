@@ -128,12 +128,9 @@ export default {
                         if (item.name && item.url && item.inPopup === true) {
                             offset++;
                             item.id = offset;
-                            // 优先用 iconData_{icon}，再用 iconData_{name}
+                            // 只用 iconData_{name}
                             let iconData;
-                            if (item.icon) {
-                                iconData = localItems['iconData_' + item.icon];
-                            }
-                            if (!iconData && item.name) {
+                            if (item.name) {
                                 iconData = localItems['iconData_' + item.name];
                             }
                             if (iconData) {
@@ -581,6 +578,7 @@ function parseUrl(url) {
 
 .el-tag {
     border-color: #d9ecff;
+    height: 30px;
 }
 
 .engine-row-fixed-bottom {

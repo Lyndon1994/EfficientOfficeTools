@@ -1,274 +1,451 @@
 <template>
+  <!-- LLM 配置说明区域（简洁版，含模型配置示例，国际化） -->
+  <div class="info-section" style="margin-bottom: 24px;">
+    <el-card shadow="never">
+      <template #header>
+        <span>{{ getMessage('readmeTitle') || 'Read Me' }}</span>
+      </template>
+      <div v-html="getMessage('readme')"></div>
+      <div style="margin-top: 16px;">
+        <strong>{{ getMessage('welcomeContributeTitle') || 'Welcome to contribute:' }}</strong>
+        <span>
+          {{ getMessage('welcomeContribute') }}
+          <a href="https://github.com/Lyndon1994/EfficientOfficeTools/blob/main/chrome/SearchTool/README.md" target="_blank">
+            {{ getMessage('welcomeContributeLink') || 'Click here.' }}
+          </a> 😊
+        </span>
+      </div>
+      <div style="margin-top: 16px;">
+        <strong>{{ getMessage('llmConfigDocTitle') || 'LLM 配置说明：' }}</strong>
+        <ul>
+          <li>{{ getMessage('llmConfigPrompt') || 'Prompt: 用户输入的提示词模板，支持 {content} 占位符。' }}</li>
+          <li>{{ getMessage('llmConfigSystemPrompt') || 'System Prompt: 系统级提示词，影响模型行为。' }}</li>
+          <li>{{ getMessage('llmConfigMenus') || '菜单可自定义多组 prompt，方便快速切换。' }}</li>
+        </ul>
+        <div style="margin-top: 12px; color: #888; font-size: 13px;">
+          {{ getMessage('llmModelsJsonTip') || '请在下方填写模型配置（JSON），支持多模型切换。每个模型需包含 active, endpoint, method, headers, bodyParams, responseParser 字段。' }}
+        </div>
+        <div style="margin-top: 12px;">
+          <a href="https://github.com/Lyndon1994/EfficientOfficeTools/blob/main/chrome/SearchTool/README.md" target="_blank">
+            <strong>{{ getMessage('llmModelsJsonExampleTitle') || '模型配置示例：' }}</strong>
+          </a>
+          <pre style="background:#f8f8f8;border-radius:4px;padding:8px;overflow:auto;font-size:12px;">
+{{ `{
+  "openai": {
+    "active": false, // is this model enabled?
+    "endpoint": "https://api.openai.com/v1/chat/completions",
+    "method": "POST",
+    "headers": {
+      "Authorization": "Bearer {YOUR-API-KEY}", // Replace with your OpenAI API key
+      "Content-Type": "application/json"
+    },
+    "bodyParams": {
+      "model": "gpt-3.5-turbo",
+      "messages": "{MESSAGES}", // Fixed value
+      "temperature": 0.7
+    },
+    "responseParser": "response.choices[0].message.content" // Must start with response.
+  },
+  "azureopenai": {
+    "active": true, // is this model enabled? Only one model can be enabled at a time.
+    "endpoint": "https://your-azure-endpoint.openai.azure.com/openai/deployments/gpt-4.1-mini/chat/completions?api-version=2024-02-15-preview",
+    "method": "POST",
+    "headers": {
+      "api-key": "{YOUR-API-KEY}",  // Replace with your Azure OpenAI API key
+      "Content-Type": "application/json"
+    },
+    "bodyParams": {
+      "model": "gpt-4.1-mini",
+      "messages": "{MESSAGES}",  // Fixed value
+      "temperature": 0.7
+    },
+    "responseParser": "response.choices[0].message.content"
+  }
+}` }}
+          </pre>
+        </div>
+      </div>
+    </el-card>
+  </div>
+
   <el-form
     ref="form"
-    label-width="10px"
+    label-width="120px"
     size="mini"
     style="width: 100%; min-width: 1000px; min-height: 500px"
   >
-    <draggable
-      v-model:list="engines"
-      @end="onDragEnd"
-      handle=".handle"
-      item-key="id"
-      class="list-group"
-    >
-      <template #item="{ element }">
-        <el-form-item
-          label=""
-          :key="element.id"
-          :gutter="12"
-          class="engine-form-item"
-        >
-          <el-row :gutter="10" class="engine-row">
-            <el-col :xs="2" :sm="1">
-              <el-icon class="handle"><Rank /></el-icon>
-            </el-col>
-            <el-col :xs="12" :sm="6" :md="3">
-              <el-input
-                :placeholder="getMessage('searchEngine')"
-                v-model="element.name"
-                class="engine-input"
-              >
-              </el-input>
-            </el-col>
-            <el-col :xs="12" :sm="6" :md="4">
-              <el-tooltip
-                class="item"
-                effect="dark"
-                :content="getMessage('optionsInPopupTip')"
-                placement="top"
-              >
-                <el-switch
-                  v-model="element.inPopup"
-                  :active-text="getMessage('optionsInPopup')"
-                ></el-switch>
-              </el-tooltip>
-            </el-col>
-            <el-col :xs="12" :sm="6" :md="4">
-              <el-tooltip
-                class="item"
-                effect="dark"
-                :content="getMessage('inRightTip')"
-                placement="top"
-              >
-                <el-switch
-                  v-model="element.inRight"
-                  :active-text="getMessage('inRight')"
-                ></el-switch>
-              </el-tooltip>
-            </el-col>
-            <el-col :xs="12" :sm="6" :md="4">
-              <el-tooltip
-                class="item"
-                effect="dark"
-                :content="getMessage('inShortcutsTip')"
-                placement="top"
-              >
-                <el-switch
-                  v-model="element.inShortcuts"
-                  :active-text="getMessage('inShortcuts')"
-                ></el-switch>
-              </el-tooltip>
-            </el-col>
-            <el-col :xs="12" :sm="6" :md="4">
-              <el-tooltip
-                class="item"
-                effect="dark"
-                :content="getMessage('inTooltipTip')"
-                placement="top"
-              >
-                <el-switch
-                  v-model="element.inTooltip"
-                  :active-text="getMessage('inTooltip')"
-                ></el-switch>
-              </el-tooltip>
-            </el-col>
-          </el-row>
-          <el-row :gutter="16" class="engine-row">
-            <el-col :xs="24" :sm="12" :md="14">
-              <el-input
-                :placeholder="getMessage('searchUrl')"
-                v-model="element.url"
-                @input="changeSearchUrl(element)"
-                class="engine-url"
-              ></el-input>
-            </el-col>
-            <el-col :xs="24" :sm="8" :md="8">
-              <el-input
-                :placeholder="getMessage('searchIcon')"
-                v-model="element.icon"
-                class="engine-icon"
-              >
-                <template v-slot:append>
-                  <img :src="element.icon" alt="" height="20px" />
-                </template>
-              </el-input>
-            </el-col>
-            <el-col :xs="6" :sm="2" :md="2" style="min-width: 40px">
-              <el-button
-                type="danger"
-                @click="delItem(element.id)"
-                circle
-                style="margin-left: 4px"
-              >
-                <el-icon><Delete /></el-icon>
-              </el-button>
-            </el-col>
-            <el-col
-              :xs="6"
-              :sm="2"
-              :md="2"
-              v-if="element.id == engines.length"
-              style="min-width: 40px"
-            >
-              <el-button
-                type="info"
-                @click="addItem"
-                circle
-                style="margin-left: 4px"
-              >
-                <el-icon><Plus /></el-icon>
-              </el-button>
-            </el-col>
-          </el-row>
-        </el-form-item>
+    <!-- 搜索引擎配置区域 -->
+    <el-card shadow="never" style="margin-bottom: 24px;">
+      <template #header>
+        <span>{{ getMessage('searchEngine') || '搜索引擎配置' }}</span>
       </template>
-    </draggable>
-
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('select2clipboardTip')"
-        placement="top"
+      <draggable
+        v-model:list="engines"
+        @end="onDragEnd"
+        handle=".handle"
+        item-key="id"
+        class="list-group"
       >
-        <el-switch
-          v-model="settings.select2clipboard"
-          :active-text="getMessage('select2clipboard')"
+        <template #item="{ element }">
+          <el-form-item
+            label=""
+            :key="element.id"
+            :gutter="12"
+            class="engine-form-item"
+          >
+            <el-row :gutter="10" class="engine-row">
+              <el-col :xs="2" :sm="1">
+                <el-icon class="handle"><Rank /></el-icon>
+              </el-col>
+              <el-col :xs="12" :sm="6" :md="3">
+                <el-input
+                  :placeholder="getMessage('searchEngine')"
+                  v-model="element.name"
+                  class="engine-input"
+                >
+                </el-input>
+              </el-col>
+              <el-col :xs="12" :sm="6" :md="4">
+                <el-tooltip
+                  class="item"
+                  effect="dark"
+                  :content="getMessage('optionsInPopupTip')"
+                  placement="top"
+                >
+                  <el-switch
+                    v-model="element.inPopup"
+                    :active-text="getMessage('optionsInPopup')"
+                  ></el-switch>
+                </el-tooltip>
+              </el-col>
+              <el-col :xs="12" :sm="6" :md="4">
+                <el-tooltip
+                  class="item"
+                  effect="dark"
+                  :content="getMessage('inRightTip')"
+                  placement="top"
+                >
+                  <el-switch
+                    v-model="element.inRight"
+                    :active-text="getMessage('inRight')"
+                  ></el-switch>
+                </el-tooltip>
+              </el-col>
+              <el-col :xs="12" :sm="6" :md="4">
+                <el-tooltip
+                  class="item"
+                  effect="dark"
+                  :content="getMessage('inShortcutsTip')"
+                  placement="top"
+                >
+                  <el-switch
+                    v-model="element.inShortcuts"
+                    :active-text="getMessage('inShortcuts')"
+                  ></el-switch>
+                </el-tooltip>
+              </el-col>
+              <el-col :xs="12" :sm="6" :md="4">
+                <el-tooltip
+                  class="item"
+                  effect="dark"
+                  :content="getMessage('inTooltipTip')"
+                  placement="top"
+                >
+                  <el-switch
+                    v-model="element.inTooltip"
+                    :active-text="getMessage('inTooltip')"
+                  ></el-switch>
+                </el-tooltip>
+              </el-col>
+            </el-row>
+            <el-row :gutter="16" class="engine-row">
+              <el-col :xs="24" :sm="12" :md="14">
+                <el-input
+                  :placeholder="getMessage('searchUrl')"
+                  v-model="element.url"
+                  @input="changeSearchUrl(element)"
+                  class="engine-url"
+                ></el-input>
+              </el-col>
+              <el-col :xs="24" :sm="8" :md="8">
+                <el-input
+                  :placeholder="getMessage('searchIcon')"
+                  v-model="element.icon"
+                  class="engine-icon"
+                >
+                  <template v-slot:append>
+                    <img :src="element.icon" alt="" height="20px" />
+                  </template>
+                </el-input>
+              </el-col>
+              <el-col :xs="6" :sm="2" :md="2" style="min-width: 40px">
+                <el-button
+                  type="danger"
+                  @click="delItem(element.id)"
+                  circle
+                  style="margin-left: 4px"
+                >
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </el-col>
+              <el-col
+                :xs="6"
+                :sm="2"
+                :md="2"
+                v-if="element.id == engines.length"
+                style="min-width: 40px"
+              >
+                <el-button
+                  type="info"
+                  @click="addItem"
+                  circle
+                  style="margin-left: 4px"
+                >
+                  <el-icon><Plus /></el-icon>
+                </el-button>
+              </el-col>
+            </el-row>
+          </el-form-item>
+        </template>
+      </draggable>
+    </el-card>
+
+    <!-- 常规设置区域 -->
+    <el-card shadow="never" style="margin-bottom: 24px;">
+      <template #header>
+        <span>{{ getMessage('generalSettings') || '常规设置' }}</span>
+      </template>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('select2clipboardTip')"
+          placement="top"
         >
-        </el-switch>
-      </el-tooltip>
-    </el-form-item>
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('showTooltipTip')"
-        placement="top"
-      >
-        <el-switch
-          v-model="settings.showTooltip"
-          :active-text="getMessage('showTooltip')"
-        ></el-switch>
-      </el-tooltip>
-    </el-form-item>
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('showTopSearchSwitchTip')"
-        placement="top"
-      >
-        <el-switch
-          v-model="settings.showTopSearchSwitch"
-          :active-text="getMessage('showTopSearchSwitch')"
-        ></el-switch>
-      </el-tooltip>
-    </el-form-item>
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('searchInNewTabTip')"
-        placement="top"
-      >
-        <el-switch
-          v-model="settings.searchInNewTab"
-          :active-text="getMessage('searchInNewTab')"
-        ></el-switch>
-      </el-tooltip>
-    </el-form-item>
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('popupSuggestEnabledTip')"
-        placement="top"
-      >
-        <el-switch
-          v-model="settings.popupSuggestEnabled"
-          :active-text="getMessage('popupSuggestEnabled')"
-        ></el-switch>
-      </el-tooltip>
-    </el-form-item>
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('popupSuggestEngineTip')"
-        placement="top"
-      >
-        <el-select v-model="settings.popupSuggestEngine" style="width: 120px">
-          <el-option label="Bing" value="bing"></el-option>
-          <el-option label="Google" value="google"></el-option>
-        </el-select>
-        <span style="margin-left: 8px">{{
-          getMessage("popupSuggestEngine")
-        }}</span>
-      </el-tooltip>
-    </el-form-item>
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('popupHistoryEnabledTip')"
-        placement="top"
-      >
-        <el-switch
-          v-model="settings.popupHistoryEnabled"
-          :active-text="getMessage('popupHistoryEnabled')"
-        ></el-switch>
-      </el-tooltip>
-    </el-form-item>
-    <el-form-item label="">
-      <el-tooltip
-        class="item"
-        effect="dark"
-        :content="getMessage('popupHistoryDaysTip')"
-        placement="top"
-      >
-        <el-input-number
-          v-model="settings.popupHistoryDays"
-          :min="1"
-          :max="365"
-          :step="1"
-          style="width: 120px"
-        ></el-input-number>
-        <span style="margin-left: 8px">{{
-          getMessage("popupHistoryDays")
-        }}</span>
-      </el-tooltip>
-    </el-form-item>
+          <el-switch
+            v-model="settings.select2clipboard"
+            :active-text="getMessage('select2clipboard')"
+          >
+          </el-switch>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('showTooltipTip')"
+          placement="top"
+        >
+          <el-switch
+            v-model="settings.showTooltip"
+            :active-text="getMessage('showTooltip')"
+          ></el-switch>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('showTopSearchSwitchTip')"
+          placement="top"
+        >
+          <el-switch
+            v-model="settings.showTopSearchSwitch"
+            :active-text="getMessage('showTopSearchSwitch')"
+          ></el-switch>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('searchInNewTabTip')"
+          placement="top"
+        >
+          <el-switch
+            v-model="settings.searchInNewTab"
+            :active-text="getMessage('searchInNewTab')"
+          ></el-switch>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('popupSuggestEnabledTip')"
+          placement="top"
+        >
+          <el-switch
+            v-model="settings.popupSuggestEnabled"
+            :active-text="getMessage('popupSuggestEnabled')"
+          ></el-switch>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('popupSuggestEngineTip')"
+          placement="top"
+        >
+          <el-select v-model="settings.popupSuggestEngine" style="width: 120px">
+            <el-option label="Bing" value="bing"></el-option>
+            <el-option label="Google" value="google"></el-option>
+          </el-select>
+          <span style="margin-left: 8px">{{
+            getMessage("popupSuggestEngine")
+          }}</span>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('popupHistoryEnabledTip')"
+          placement="top"
+        >
+          <el-switch
+            v-model="settings.popupHistoryEnabled"
+            :active-text="getMessage('popupHistoryEnabled')"
+          ></el-switch>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('popupHistoryDaysTip')"
+          placement="top"
+        >
+          <el-input-number
+            v-model="settings.popupHistoryDays"
+            :min="1"
+            :max="365"
+            :step="1"
+            style="width: 120px"
+          ></el-input-number>
+          <span style="margin-left: 8px">{{
+            getMessage("popupHistoryDays")
+          }}</span>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item label="">
+        {{ getMessage("themeColorTip") }}:
+        <el-color-picker
+          v-model="settings.themeColor"
+          show-alpha
+          :predefine="predefineColors"
+        >
+        </el-color-picker>
+      </el-form-item>
+      <el-form-item label="">
+        {{ getMessage("textColorTip") }}:
+        <el-color-picker
+          v-model="settings.textColor"
+          show-alpha
+          :predefine="predefineColors"
+        >
+        </el-color-picker>
+      </el-form-item>
+    </el-card>
 
-    <el-form-item label="">
-      {{ getMessage("themeColorTip") }}:
-      <el-color-picker
-        v-model="settings.themeColor"
-        show-alpha
-        :predefine="predefineColors"
-      >
-      </el-color-picker>
-    </el-form-item>
-    <el-form-item label="">
-      {{ getMessage("textColorTip") }}:
-      <el-color-picker
-        v-model="settings.textColor"
-        show-alpha
-        :predefine="predefineColors"
-      >
-      </el-color-picker>
-    </el-form-item>
+    <!-- LLM 配置区域 -->
+    <el-card shadow="never" style="margin-bottom: 24px;">
+      <template #header>
+        <span>{{ getMessage('llmSettings') || '大模型（LLM）配置' }}</span>
+      </template>
+      <!-- 新增：模型配置JSON输入框 -->
+      <el-form-item :label="getMessage('llmModelsJsonLabel') || 'Models JSON'">
+        <el-input
+          v-model="llmConfig.llmModels"
+          type="textarea"
+          :rows="8"
+          :placeholder="getMessage('llmModelsJsonPlaceholder')"
+          style="width: 100%; max-width: 800px"
+        ></el-input>
+        <div style="color: #888; font-size: 12px; margin-top: 4px;">
+          {{ getMessage('llmModelsJsonTip') || 'Please enter a JSON object. Each key is a model name, and the value is an object with fields: active, endpoint, method, headers, bodyParams, responseParser.' }}
+        </div>
+      </el-form-item>
+      <el-divider></el-divider>
+      <el-form-item>
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="getMessage('enableSummarizeTip') || '是否启用总结全文'"
+          placement="top"
+        >
+          <el-switch
+            v-model="llmConfig.enableSummarize"
+            :active-text="getMessage('enableSummarize') || '启用总结全文'"
+          ></el-switch>
+        </el-tooltip>
+      </el-form-item>
+      <el-form-item :label="getMessage('llmPromptLabel') || 'Prompt'">
+        <el-input
+          v-model="llmConfig.prompt"
+          :placeholder="getMessage('llmPrompt')"
+          type="textarea"
+          :rows="2"
+          style="width: 600px"
+        ></el-input>
+      </el-form-item>
+      <el-form-item :label="getMessage('llmSystemPromptLabel') || 'System Prompt'">
+        <el-input
+          v-model="llmConfig.systemPrompt"
+          :placeholder="getMessage('llmSystemPrompt')"
+          type="textarea"
+          :rows="2"
+          style="width: 600px"
+        ></el-input>
+      </el-form-item>
+      <el-divider></el-divider>
+      <el-form-item :label="getMessage('llmAskLlmLabel') || 'Ask LLM'">
+        <draggable
+          v-model:list="llmChatMenus"
+          handle=".llm-menu-handle"
+          item-key="id"
+          class="list-group"
+        >
+          <template #item="{ element }">
+            <el-row :gutter="8" align="middle" style="margin-bottom: 8px;">
+              <el-col :span="1">
+                <el-icon class="llm-menu-handle" style="cursor:move;"><Rank /></el-icon>
+              </el-col>
+              <el-col :span="4">
+                <el-input v-model="element.name" :placeholder="getMessage('llmChatMenuName') || 'Name'"></el-input>
+              </el-col>
+              <el-col :span="6">
+                <el-input v-model="element.prompt" :placeholder="getMessage('llmChatMenuPrompt') || 'Prompt, use {content}'"></el-input>
+              </el-col>
+              <el-col :span="8">
+                <el-input v-model="element.systemPrompt" :placeholder="getMessage('llmChatMenuSystemPrompt') || 'System Prompt'"></el-input>
+              </el-col>
+              <el-col :span="2">
+                <el-button
+                  type="danger"
+                  @click="delChatMenu(element.id)"
+                  circle
+                  style="margin-left: 4px"
+                >
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </el-col>
+            </el-row>
+          </template>
+        </draggable>
+        <el-button
+          type="info"
+          @click="addChatMenu"
+          circle
+          style="margin-left: 4px"
+        >
+          <el-icon><Plus /></el-icon>
+        </el-button>
+      </el-form-item>
+    </el-card>
 
+    <!-- 操作按钮区域 -->
     <el-form-item>
       <el-button type="danger" @click="reset">{{
         getMessage("reset")
@@ -323,6 +500,15 @@ export default defineComponent({
                 popupHistoryEnabled: true,
                 popupHistoryDays: 90,
             },
+            llmConfig: {
+                enableSummarize: false,
+                llmModels: '[]', // 新增，模型配置JSON字符串
+                prompt: "",
+                systemPrompt: ""
+            },
+            llmChatMenus: [
+                // { id: 1, name: "对话助手", prompt: "请用中文简要回答：{content}", systemPrompt: "", max_tokens: 2048, temperature: 0.5 }
+            ],
             predefineColors: [
                 '#FFFFFF',
                 '#ff4500',
@@ -357,6 +543,11 @@ export default defineComponent({
                 popupSuggestEngine: 'bing',
                 popupHistoryEnabled: true,
                 popupHistoryDays: 90,
+                llmEnableSummarize: false,
+                llmModels: '[]', // 新增
+                llmPrompt: this.getMessage('llmPrompt'),
+                llmSystemPrompt: this.getMessage('llmSystemPrompt'),
+                llmChatMenus: [],
             }; // 默认配置
             let that = this;
             console.log("[options] init defaultConfig:", defaultConfig);
@@ -366,8 +557,8 @@ export default defineComponent({
                 // 先从 local 取 iconData
                 chrome.storage.local.get(null, function(localItems) {
                     engines.forEach(engine => {
-                        if (localItems && localItems['iconData_' + engine.id]) {
-                            engine.iconData = localItems['iconData_' + engine.id];
+                        if (localItems && localItems['iconData_' + engine.name]) {
+                            engine.iconData = localItems['iconData_' + engine.name];
                         }
                     });
                     that.engines = engines;
@@ -381,12 +572,22 @@ export default defineComponent({
                     that.settings.popupSuggestEngine = items.popupSuggestEngine;
                     that.settings.popupHistoryEnabled = items.popupHistoryEnabled;
                     that.settings.popupHistoryDays = items.popupHistoryDays;
+                    that.llmConfig.enableSummarize = items.llmEnableSummarize || false;
+                    that.llmConfig.llmModels = items.llmModels || '[]';
+                    that.llmConfig.prompt = items.llmPrompt || "";
+                    that.llmConfig.systemPrompt = items.llmSystemPrompt || "";
+                    let loadedMenus = Array.isArray(items.llmChatMenus) ? items.llmChatMenus : [];
+                    that.llmChatMenus = loadedMenus.map((menu, idx) => ({
+                        id: typeof menu.id !== 'undefined' ? menu.id : idx + 1,
+                        name: menu.name || "",
+                        prompt: menu.prompt || "",
+                        systemPrompt: menu.systemPrompt || ""
+                    }));
                     console.log("[options] loaded engines:", that.engines);
                     console.log("[options] loaded settings:", that.settings);
                 });
                 return true;
             });
-            this.openReadme();
         },
         onDragEnd(evt) {
             console.log(this.engines, "form.engines");
@@ -441,25 +642,35 @@ export default defineComponent({
             });
             // 先存 iconData 到 local
             let localIconData = {};
+            // 先获取已有的iconData，避免重复下载和保存
+            const localItems = await new Promise(resolve => {
+                chrome.storage.local.get(null, resolve);
+            });
             for (let engine of this.engines) {
-                if (engine.icon && !engine.icon.startsWith('data:')) {
+                // 只用 name 做 key
+                let iconKeyByName = engine.name ? 'iconData_' + engine.name : null;
+                let alreadyExists = false;
+                if (iconKeyByName && localItems[iconKeyByName]) {
+                    engine.iconData = localItems[iconKeyByName];
+                    alreadyExists = true;
+                }
+                if (!alreadyExists && engine.icon && !engine.icon.startsWith('data:')) {
                     engine.iconData = await this.fetchIconData(engine.icon);
-                } else if (engine.icon && engine.icon.startsWith('data:')) {
+                } else if (!alreadyExists && engine.icon && engine.icon.startsWith('data:')) {
                     engine.iconData = engine.icon;
                 }
+                // 只保存新的iconData
                 if (engine.iconData) {
-                    // 使用 engine.name 作为 key
-                    if (engine.name) {
-                        localIconData['iconData_' + engine.name] = engine.iconData;
-                    }
-                    if (engine.icon) {
-                        localIconData['iconData_' + engine.icon] = engine.iconData;
+                    if (iconKeyByName && !localItems[iconKeyByName]) {
+                        localIconData[iconKeyByName] = engine.iconData;
                     }
                 }
             }
-            chrome.storage.local.set(localIconData, function() {
-                console.log("[options] chrome.storage.local.set iconData:", localIconData);
-            });
+            if (Object.keys(localIconData).length > 0) {
+                chrome.storage.local.set(localIconData, function() {
+                    console.log("[options] chrome.storage.local.set iconData:", localIconData);
+                });
+            }
             // sync 只存元数据
             const enginesMeta = this.engines.map(({iconData, ...rest}) => rest);
             const saveObj = {
@@ -474,9 +685,19 @@ export default defineComponent({
                 popupSuggestEngine: this.settings.popupSuggestEngine,
                 popupHistoryEnabled: this.settings.popupHistoryEnabled,
                 popupHistoryDays: this.settings.popupHistoryDays,
+                llmEnableSummarize: this.llmConfig.enableSummarize,
+                llmModels: this.llmConfig.llmModels,
+                llmPrompt: this.llmConfig.prompt,
+                llmSystemPrompt: this.llmConfig.systemPrompt,
+                llmChatMenus: this.llmChatMenus.map(menu => ({
+                    id: menu.id,
+                    name: menu.name,
+                    prompt: menu.prompt,
+                    systemPrompt: menu.systemPrompt
+                })),
             };
             console.log("[options] onSubmit saveObj:", saveObj);
-            chrome.runtime.sendMessage(enginesMeta, function (response) {
+            chrome.runtime.sendMessage({ action: "updateMenus", enginesMeta, llmChatMenus: this.llmChatMenus }, function (response) {
                 console.log("[options] runtime.sendMessage response:", response);
             });
             chrome.storage.sync.set(saveObj,
@@ -486,9 +707,6 @@ export default defineComponent({
                         message: that.getMessage('saved') + ". " + that.getMessage('refresh'),
                         type: "success",
                     });
-                    chrome.storage.sync.get(null, function (allItems) {
-                        console.log("[options] chrome.storage.sync.get after set:", allItems);
-                    });
                     return true;
                 }
             );
@@ -497,16 +715,20 @@ export default defineComponent({
             // 导出时合并 iconData
             chrome.storage.local.get(null, (localItems) => {
                 const enginesWithIcon = this.engines.map(engine => {
-                    // 优先用 iconData_{icon}，再用 iconData_{name}
-                    let iconData = engine.icon ? localItems['iconData_' + engine.icon] : undefined;
-                    if (!iconData && engine.name) {
-                        iconData = localItems['iconData_' + engine.name];
-                    }
+                    // 只用 iconData_{name}
+                    let iconData = engine.name ? localItems['iconData_' + engine.name] : undefined;
                     return {...engine, iconData};
                 });
                 const data = {
                     engines: enginesWithIcon,
-                    settings: this.settings
+                    settings: this.settings,
+                    llmConfig: this.llmConfig,
+                    llmChatMenus: this.llmChatMenus.map(menu => ({
+                        id: menu.id,
+                        name: menu.name,
+                        prompt: menu.prompt,
+                        systemPrompt: menu.systemPrompt
+                    }))
                 };
                 const json = JSON.stringify(data, null, 2);
                 const blob = new Blob([json], { type: "application/json" });
@@ -532,16 +754,32 @@ export default defineComponent({
                         if (!this.settings.textColor) {
                             this.settings.textColor = '#202124';
                         }
+                        if (data.llmConfig) {
+                            // 兼容旧结构
+                            if (typeof data.llmConfig.llmModels === 'string') {
+                                this.llmConfig.llmModels = data.llmConfig.llmModels;
+                            } else if (Array.isArray(data.llmConfig.llmModels)) {
+                                this.llmConfig.llmModels = JSON.stringify(data.llmConfig.llmModels, null, 2);
+                            } else {
+                                this.llmConfig.llmModels = '';
+                            }
+                            this.llmConfig.enableSummarize = !!data.llmConfig.enableSummarize;
+                            this.llmConfig.prompt = data.llmConfig.prompt || "";
+                            this.llmConfig.systemPrompt = data.llmConfig.systemPrompt || "";
+                        }
+                        if (Array.isArray(data.llmChatMenus)) {
+                            this.llmChatMenus = data.llmChatMenus.map((menu, idx) => ({
+                                id: typeof menu.id !== 'undefined' ? menu.id : idx + 1,
+                                name: menu.name || "",
+                                prompt: menu.prompt || "",
+                                systemPrompt: menu.systemPrompt || ""
+                            }));
+                        }
                         // 导入 iconData 到 local
                         let localIconData = {};
                         this.engines.forEach(engine => {
-                            if (engine.iconData) {
-                                if (engine.name) {
-                                    localIconData['iconData_' + engine.name] = engine.iconData;
-                                }
-                                if (engine.icon) {
-                                    localIconData['iconData_' + engine.icon] = engine.iconData;
-                                }
+                            if (engine.iconData && engine.name) {
+                                localIconData['iconData_' + engine.name] = engine.iconData;
                             }
                         });
                         chrome.storage.local.set(localIconData, function() {
@@ -560,21 +798,36 @@ export default defineComponent({
             reader.readAsText(file);
             return false;
         },
+        addChatMenu() {
+            this.llmChatMenus.push({
+                id: this.llmChatMenus.length > 0 ? Math.max(...this.llmChatMenus.map(m => m.id)) + 1 : 1,
+                name: "",
+                prompt: "",
+                systemPrompt: ""
+            });
+        },
+        delChatMenu(id) {
+            this.llmChatMenus = this.llmChatMenus.filter(menu => menu.id !== id);
+        },
         reset() {
             let that = this;
-            this.$confirm(that.getMessage('reset') + '?', 'Confirm', {
-                confirmButtonText: 'Yes',
-                cancelButtonText: 'No',
-                type: 'warning'
-            }).then(() => {
+            this.$confirm(
+                that.getMessage('reset') + '?',
+                that.getMessage('confirmTitle') || 'Confirm',
+                {
+                    confirmButtonText: that.getMessage('confirmYes') || 'Yes',
+                    cancelButtonText: that.getMessage('confirmNo') || 'No',
+                    type: 'warning'
+                }
+            ).then(() => {
+                chrome.storage.local.clear(function (items) {
+                    console.log("local storage cleared", items);
+                });
                 chrome.storage.sync.clear(function (items) {
                     console.log("[options] chrome.storage.sync.clear done", items);
                     that.$message({
                         message: that.getMessage('reseted'),
                         type: "success",
-                    });
-                    chrome.storage.sync.get(null, function (allItems) {
-                        console.log("[options] chrome.storage.sync.get after clear:", allItems);
                     });
                     return true;
                 });
@@ -583,42 +836,17 @@ export default defineComponent({
             });
         },
         getMessage(key) {
-            return chrome.i18n.getMessage(key);
+            // 兼容 i18n 未配置 fallback
+            return chrome.i18n.getMessage(key) || '';
         },
         autosave: debounce(function (val, old) {
             if (JSON.stringify(val) != JSON.stringify(old)) {
                 this.onSubmit();
                 if (!this.openHiTip) {
-                    this.openHi();
                     this.openHiTip = true;
                 }
             }
         }, 1000),
-        openHi() {
-            this.$notify({
-                title: 'Hi',
-                dangerouslyUseHTMLString: true,
-                message: this.getMessage('comment'),
-                duration: 0
-            });
-        },
-        openReadme() {
-            this.$notify({
-                title: 'Read Me',
-                dangerouslyUseHTMLString: true,
-                message: this.getMessage('readme'),
-                duration: 0
-            });
-            let that = this;
-            setTimeout(function(){ 
-                that.$notify({
-                    title: 'Welcome to contribute',
-                    dangerouslyUseHTMLString: true,
-                    message: "You are more than welcome to contribute code to improve the tool. <a href='https://github.com/Lyndon1994/EfficientOfficeTools/tree/main/chrome/SearchTool'>Click here.</a> 😊",
-                    duration: 0
-                });
-            }, 3000);
-        }
     },
 
     created() {
@@ -627,7 +855,7 @@ export default defineComponent({
 
     computed: {
         newForm() {
-            return JSON.parse(JSON.stringify([this.engines, this.settings]))
+            return JSON.parse(JSON.stringify([this.engines, this.settings, this.llmConfig, this.llmChatMenus]));
         }
     },
 
@@ -711,5 +939,10 @@ export default defineComponent({
 
 .handle {
   cursor: move;
+}
+
+.info-section {
+  max-width: 1100px;
+  margin: 0 auto 24px auto;
 }
 </style>
