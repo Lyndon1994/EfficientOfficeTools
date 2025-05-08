@@ -1,6 +1,6 @@
 {
-    "extName": {"message": "Search Tool"},
-    "extDescription": {"message": "Quickly switch between customized search engines; Add a custom search engine in the right-click menu."},
+    "extName": {"message": "Search Tool (AI)"},
+    "extDescription": {"message": "Quickly switch between customized search engines; Add a custom search engine in the right-click menu. New AI model support."},
     "optionsSortId": {"message": "Sort ID"},
     "optionsSortIdTip": {"message": "After saving, the field will be sorted from small to large"},
     "optionsInPopup": {"message": "Popup"},
@@ -83,7 +83,7 @@
     "enableSummarizeTip": { "message": "Enable to use the summarize full page feature in the context menu. API Key and Endpoint are required." },
     "summarizeFullPage": { "message": "Summarize Full Page" },
     "llmModelsJsonTip": {
-        "message": "Please enter the model configuration (JSON) below. Multiple models are supported. Each model should include: active, endpoint, method, headers, bodyParams, responseParser."
+        "message": "Please enter the model configuration (JSON) below. Multiple models are supported. Each model should include: active, endpoint, method, headers, bodyParams, responseParser. \nPlease delete the comments in the JSON file before using it. If you want to use the default model, please set active to true. Otherwise, set it to false."
     },
     "llmModelsJsonExampleTitle": {
         "message": "Model Config Example:"

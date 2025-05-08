@@ -23,6 +23,16 @@ npm run serve
 ```
 在 Chrome 扩展页面加载 `dist` 文件夹。
 
+## 打包编译
+```bash
+npm run build
+```
+
+## 打包编译crx文件
+```bash
+npm run build:crx
+```
+
 ## 反馈与建议
 
 如有问题或建议，请提交 Issue。
@@ -54,6 +64,16 @@ npm run serve
 
 - 建议在最新版 Chrome 浏览器下测试。
 - 如有兼容性问题，请在 PR 或 Issue 中说明。
+
+### 5. 发布
+
+# 打包zip:
+
+```bash
+npm run build:zip
+# 访问上传： https://chrome.google.com/webstore/devconsole/ea79ae7b-aa25-4185-92f4-8418c3113612/fjjkihnjlinkjpfeooipegebcakeocef/edit/package
+# Edge: https://partner.microsoft.com/en-us/dashboard/microsoftedge/cb67edc7-1dfc-46fd-be12-3866913f24f0/packages/dashboard
+```
 
 ---
 

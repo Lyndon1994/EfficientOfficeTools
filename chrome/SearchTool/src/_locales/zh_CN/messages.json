@@ -1,6 +1,6 @@
 {
-    "extName": {"message": "搜索助手"},
-    "extDescription": {"message": "快速切换自定义搜索引擎；在右键菜单添加自定义搜索引擎。"},
+    "extName": {"message": "搜索助手（AI）"},
+    "extDescription": {"message": "快速切换自定义搜索引擎；在右键菜单添加自定义搜索引擎。新增AI大模型支持。"},
     "optionsSortId": {"message": "排序ID"},
     "optionsSortIdTip": {"message": "保存后将根据该字段从小到大排序"},
     "optionsInPopup": {"message": "popup页面"},
@@ -83,7 +83,7 @@
     "llmConfigTemperature": { "message": "Temperature: 采样温度，越高越随机。" },
     "llmConfigMenus": { "message": "菜单可自定义多组 prompt，方便快速切换。" },
     "llmModelsJsonTip": {
-        "message": "请在下方填写模型配置（JSON），支持多模型切换。每个模型需包含 active, endpoint, method, headers, bodyParams, responseParser 字段。"
+        "message": "请在下方填写模型配置（JSON），支持多模型切换。每个模型需包含 active, endpoint, method, headers, bodyParams, responseParser 字段。\n请删除实例中的注释部分。目前只支持一个模型设置为active为true。"
     },
     "llmModelsJsonExampleTitle": {
         "message": "模型配置示例："

@@ -10,7 +10,7 @@
         <strong>{{ getMessage('welcomeContributeTitle') || 'Welcome to contribute:' }}</strong>
         <span>
           {{ getMessage('welcomeContribute') }}
-          <a href="https://github.com/Lyndon1994/EfficientOfficeTools/tree/main/chrome/SearchTool" target="_blank">
+          <a href="https://github.com/Lyndon1994/EfficientOfficeTools/blob/main/chrome/SearchTool/README.md" target="_blank">
             {{ getMessage('welcomeContributeLink') || 'Click here.' }}
           </a> 😊
         </span>
@@ -18,19 +18,17 @@
       <div style="margin-top: 16px;">
         <strong>{{ getMessage('llmConfigDocTitle') || 'LLM 配置说明：' }}</strong>
         <ul>
-          <li>{{ getMessage('llmConfigApiKey') || 'API Key: 你的大模型服务密钥。' }}</li>
-          <li>{{ getMessage('llmConfigEndpoint') || 'Endpoint: LLM 接口地址，例如 https://my-ai.openai.azure.com/openai/deployments/my-gpt-4.1/chat/completions?api-version=2024-02-15-preview' }}</li>
           <li>{{ getMessage('llmConfigPrompt') || 'Prompt: 用户输入的提示词模板，支持 {content} 占位符。' }}</li>
           <li>{{ getMessage('llmConfigSystemPrompt') || 'System Prompt: 系统级提示词，影响模型行为。' }}</li>
-          <li>{{ getMessage('llmConfigMaxTokens') || 'Max Tokens: 返回内容最大长度。' }}</li>
-          <li>{{ getMessage('llmConfigTemperature') || 'Temperature: 采样温度，越高越随机。' }}</li>
           <li>{{ getMessage('llmConfigMenus') || '菜单可自定义多组 prompt，方便快速切换。' }}</li>
         </ul>
         <div style="margin-top: 12px; color: #888; font-size: 13px;">
           {{ getMessage('llmModelsJsonTip') || '请在下方填写模型配置（JSON），支持多模型切换。每个模型需包含 active, endpoint, method, headers, bodyParams, responseParser 字段。' }}
         </div>
         <div style="margin-top: 12px;">
-          <strong>{{ getMessage('llmModelsJsonExampleTitle') || '模型配置示例：' }}</strong>
+          <a href="https://github.com/Lyndon1994/EfficientOfficeTools/blob/main/chrome/SearchTool/README.md" target="_blank">
+            <strong>{{ getMessage('llmModelsJsonExampleTitle') || '模型配置示例：' }}</strong>
+          </a>
           <pre style="background:#f8f8f8;border-radius:4px;padding:8px;overflow:auto;font-size:12px;">
 {{ `{
   "openai": {
@@ -46,7 +44,7 @@
       "messages": "{MESSAGES}", // Fixed value
       "temperature": 0.7
     },
-    "responseParser": "response.choices[0].message.content"
+    "responseParser": "response.choices[0].message.content" // Must start with response.
   },
   "azureopenai": {
     "active": true, // is this model enabled? Only one model can be enabled at a time.
