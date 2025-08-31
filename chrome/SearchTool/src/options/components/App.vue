@@ -659,11 +659,8 @@ export default defineComponent({
                 } else if (!alreadyExists && engine.icon && engine.icon.startsWith('data:')) {
                     engine.iconData = engine.icon;
                 }
-                // 只保存新的iconData
                 if (engine.iconData) {
-                    if (iconKeyByName && !localItems[iconKeyByName]) {
-                        localIconData[iconKeyByName] = engine.iconData;
-                    }
+                    localIconData[iconKeyByName] = engine.iconData;
                 }
             }
             if (Object.keys(localIconData).length > 0) {

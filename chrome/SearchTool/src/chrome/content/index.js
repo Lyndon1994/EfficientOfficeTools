@@ -184,6 +184,7 @@ function createTopTooltip() {
   var query =
     urlObj["wd"] ||
     urlObj["word"] ||
+    urlObj["keyword"] ||
     urlObj["query"] ||
     urlObj["q"] ||
     urlObj["w"] ||
